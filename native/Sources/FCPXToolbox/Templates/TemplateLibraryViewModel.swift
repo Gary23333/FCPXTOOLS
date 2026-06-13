@@ -34,16 +34,24 @@ final class TemplateLibraryViewModel: ObservableObject {
     @Published private(set) var filteredItems: [TemplateItem] = []
     /// 当前实际渲染的分页切片。
     @Published private(set) var visibleItems: [TemplateItem] = []
+    @Published private(set) var currentPage = 1
 
     private var counts: [TemplateCategory: Int] = [:]
-    private let pageSize = 80
-    private var displayLimit = 80
+    let pageSize = 50
     private var searchDebounce: Task<Void, Never>?
 
     private let scanner = TemplateScanner()
 
-    var canLoadMore: Bool { visibleItems.count < filteredItems.count }
     var allCount: Int { items.count }
+    var totalPages: Int { max(1, Int(ceil(Double(filteredItems.count) / Double(pageSize)))) }
+    var pageRangeText: String {
+        guard !filteredItems.isEmpty else { return "0 / 0" }
+        let start = (currentPage - 1) * pageSize + 1
+        let end = min(currentPage * pageSize, filteredItems.count)
+        return "\(start)-\(end) / \(filteredItems.count)"
+    }
+    var canGoPreviousPage: Bool { currentPage > 1 }
+    var canGoNextPage: Bool { currentPage < totalPages }
     var groupOptions: [String] {
         let groups = items
             .filter { selectedCategory == nil || $0.category == selectedCategory }
@@ -70,6 +78,7 @@ final class TemplateLibraryViewModel: ObservableObject {
         items = []
         filteredItems = []
         visibleItems = []
+        currentPage = 1
         counts = [:]
         totalBytes = 0
         selectedItemID = nil
@@ -141,6 +150,32 @@ final class TemplateLibraryViewModel: ObservableObject {
         applyFilter()
     }
 
+    func goToFirstPage() {
+        setPage(1)
+    }
+
+    func goToPreviousPage() {
+        setPage(currentPage - 1)
+    }
+
+    func goToNextPage() {
+        setPage(currentPage + 1)
+    }
+
+    func goToLastPage() {
+        setPage(totalPages)
+    }
+
+    private func setPage(_ page: Int) {
+        currentPage = min(max(page, 1), totalPages)
+        refreshVisible()
+        if let id = selectedItemID, !visibleItems.contains(where: { $0.id == id }) {
+            selectedItemID = visibleItems.first?.id
+        } else if selectedItemID == nil {
+            selectedItemID = visibleItems.first?.id
+        }
+    }
+
     func delete(_ item: TemplateItem) {
         guard item.isWritable, !scanning else { return }
         statusText = "正在移到废纸篓：\(item.displayName)"
@@ -202,28 +237,20 @@ final class TemplateLibraryViewModel: ObservableObject {
             }
         }
         filteredItems = base
-        displayLimit = pageSize
+        currentPage = 1
         refreshVisible()
-        if let id = selectedItemID, !filteredItems.contains(where: { $0.id == id }) {
-            selectedItemID = filteredItems.first?.id
+        if let id = selectedItemID, !visibleItems.contains(where: { $0.id == id }) {
+            selectedItemID = visibleItems.first?.id
         } else if selectedItemID == nil {
-            selectedItemID = filteredItems.first?.id
-        }
-    }
-
-    /// 滚动到底部时追加下一页。
-    func loadMoreIfNeeded(currentItem: TemplateItem) {
-        guard canLoadMore else { return }
-        // 当渲染到末尾附近时触发。
-        if let idx = visibleItems.firstIndex(of: currentItem),
-           idx >= visibleItems.count - 12 {
-            displayLimit += pageSize
-            refreshVisible()
+            selectedItemID = visibleItems.first?.id
         }
     }
 
     private func refreshVisible() {
-        visibleItems = Array(filteredItems.prefix(displayLimit))
+        currentPage = min(max(currentPage, 1), totalPages)
+        let start = (currentPage - 1) * pageSize
+        let end = min(start + pageSize, filteredItems.count)
+        visibleItems = start < end ? Array(filteredItems[start..<end]) : []
     }
 
     var selectedItem: TemplateItem? {

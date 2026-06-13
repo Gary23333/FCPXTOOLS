@@ -133,21 +133,12 @@ struct TemplateLibraryView: View {
                     LazyVGrid(columns: columns, spacing: 14) {
                         ForEach(model.visibleItems) { item in
                             card(item)
-                                .onAppear { model.loadMoreIfNeeded(currentItem: item) }
                         }
                     }
                     .padding(16)
-
-                    if model.canLoadMore {
-                        HStack(spacing: 8) {
-                            ProgressView().controlSize(.small)
-                            Text("加载更多… 已显示 \(model.visibleItems.count) / \(model.filteredItems.count)")
-                                .font(.system(size: 11))
-                                .foregroundStyle(Theme.textSecondary)
-                        }
-                        .padding(.bottom, 16)
-                    }
                 }
+                Divider()
+                paginationBar
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -205,32 +196,16 @@ struct TemplateLibraryView: View {
 
     private var filterBar: some View {
         HStack(spacing: 8) {
-            Picker("厂商", selection: $model.selectedGroup) {
-                ForEach(model.groupOptions, id: \.self) { group in
-                    Text(group).tag(group)
-                }
-            }
+            groupMenu
             .frame(maxWidth: 180)
 
-            Picker("大小", selection: $model.sizeRange) {
-                ForEach(TemplateSizeRange.allCases) { range in
-                    Text(range.rawValue).tag(range)
-                }
-            }
+            sizeMenu
             .frame(maxWidth: 150)
 
-            Picker("修改时间", selection: $model.modifiedRange) {
-                ForEach(TemplateModifiedRange.allCases) { range in
-                    Text(range.rawValue).tag(range)
-                }
-            }
+            modifiedMenu
             .frame(maxWidth: 150)
 
-            Picker("来源", selection: $model.rootFilter) {
-                ForEach(TemplateRootFilter.allCases) { source in
-                    Text(source.rawValue).tag(source)
-                }
-            }
+            sourceMenu
             .frame(maxWidth: 130)
 
             if model.activeFilterCount > 0 || !model.searchText.isEmpty {
@@ -249,6 +224,122 @@ struct TemplateLibraryView: View {
                 .foregroundStyle(Theme.textSecondary)
         }
         .font(.system(size: 11))
+    }
+
+    private var groupMenu: some View {
+        Menu {
+            ForEach(model.groupOptions, id: \.self) { group in
+                Button(group) { model.selectedGroup = group }
+            }
+        } label: {
+            filterMenuLabel(title: "厂商", value: model.selectedGroup)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var sizeMenu: some View {
+        Menu {
+            ForEach(TemplateSizeRange.allCases) { range in
+                Button(range.rawValue) { model.sizeRange = range }
+            }
+        } label: {
+            filterMenuLabel(title: "大小", value: model.sizeRange.rawValue)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var modifiedMenu: some View {
+        Menu {
+            ForEach(TemplateModifiedRange.allCases) { range in
+                Button(range.rawValue) { model.modifiedRange = range }
+            }
+        } label: {
+            filterMenuLabel(title: "修改时间", value: model.modifiedRange.rawValue)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var sourceMenu: some View {
+        Menu {
+            ForEach(TemplateRootFilter.allCases) { source in
+                Button(source.rawValue) { model.rootFilter = source }
+            }
+        } label: {
+            filterMenuLabel(title: "来源", value: model.rootFilter.rawValue)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func filterMenuLabel(title: String, value: String) -> some View {
+        HStack(spacing: 5) {
+            Text(title)
+                .foregroundStyle(Theme.textSecondary)
+            Text(value)
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(1)
+                .truncationMode(.tail)
+            Spacer(minLength: 2)
+            Image(systemName: "chevron.down")
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .font(.system(size: 11, weight: .medium))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.panel)
+        .overlay(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .stroke(Theme.line, lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+    }
+
+    private var paginationBar: some View {
+        HStack(spacing: 10) {
+            Text("每页 \(model.pageSize) 项")
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textSecondary)
+            Spacer()
+            pagerButton("首页", systemImage: "backward.end.fill", enabled: model.canGoPreviousPage) {
+                model.goToFirstPage()
+            }
+            pagerButton("上一页", systemImage: "chevron.left", enabled: model.canGoPreviousPage) {
+                model.goToPreviousPage()
+            }
+            Text("第 \(model.currentPage) / \(model.totalPages) 页 · \(model.pageRangeText)")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+                .frame(minWidth: 150)
+            pagerButton("下一页", systemImage: "chevron.right", enabled: model.canGoNextPage) {
+                model.goToNextPage()
+            }
+            pagerButton("末页", systemImage: "forward.end.fill", enabled: model.canGoNextPage) {
+                model.goToLastPage()
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(Theme.background)
+    }
+
+    private func pagerButton(_ title: String, systemImage: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .labelStyle(.iconOnly)
+                .frame(width: 28, height: 24)
+                .foregroundStyle(enabled ? Theme.accent : Theme.textSecondary)
+                .background(Theme.panel)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(Theme.line, lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .opacity(enabled ? 1 : 0.42)
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+        .help(title)
     }
 
     private func deleteButton(_ item: TemplateItem) -> some View {
