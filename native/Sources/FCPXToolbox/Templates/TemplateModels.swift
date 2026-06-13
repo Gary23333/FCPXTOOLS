@@ -40,6 +40,72 @@ enum TemplateRoot: String {
     var isWritable: Bool { self == .user }
 }
 
+enum TemplateRootFilter: String, CaseIterable, Identifiable {
+    case all = "全部来源"
+    case user = "用户"
+    case system = "系统"
+
+    var id: String { rawValue }
+
+    func matches(_ root: TemplateRoot) -> Bool {
+        switch self {
+        case .all: return true
+        case .user: return root == .user
+        case .system: return root == .system
+        }
+    }
+}
+
+enum TemplateSizeRange: String, CaseIterable, Identifiable {
+    case all = "全部大小"
+    case under10MB = "< 10 MB"
+    case tenTo100MB = "10-100 MB"
+    case hundredMBTo1GB = "100 MB-1 GB"
+    case over1GB = "> 1 GB"
+
+    var id: String { rawValue }
+
+    func matches(_ bytes: Int64) -> Bool {
+        let mb: Int64 = 1_024 * 1_024
+        let gb: Int64 = 1_024 * mb
+        switch self {
+        case .all: return true
+        case .under10MB: return bytes < 10 * mb
+        case .tenTo100MB: return bytes >= 10 * mb && bytes < 100 * mb
+        case .hundredMBTo1GB: return bytes >= 100 * mb && bytes < gb
+        case .over1GB: return bytes >= gb
+        }
+    }
+}
+
+enum TemplateModifiedRange: String, CaseIterable, Identifiable {
+    case all = "全部时间"
+    case last7Days = "最近 7 天"
+    case last30Days = "最近 30 天"
+    case lastYear = "最近一年"
+    case olderThanYear = "一年前"
+    case unknown = "未知"
+
+    var id: String { rawValue }
+
+    func matches(_ date: Date?, now: Date = Date()) -> Bool {
+        switch self {
+        case .all:
+            return true
+        case .unknown:
+            return date == nil
+        case .last7Days:
+            return date.map { $0 >= now.addingTimeInterval(-7 * 24 * 60 * 60) } ?? false
+        case .last30Days:
+            return date.map { $0 >= now.addingTimeInterval(-30 * 24 * 60 * 60) } ?? false
+        case .lastYear:
+            return date.map { $0 >= now.addingTimeInterval(-365 * 24 * 60 * 60) } ?? false
+        case .olderThanYear:
+            return date.map { $0 < now.addingTimeInterval(-365 * 24 * 60 * 60) } ?? false
+        }
+    }
+}
+
 /// 一个 Motion 模板（包含 `<name>.moti` 的文件夹）。
 struct TemplateItem: Identifiable, Hashable {
     let id: URL                 // 模板文件夹 URL，天然唯一

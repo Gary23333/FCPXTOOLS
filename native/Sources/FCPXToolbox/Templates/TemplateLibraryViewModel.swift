@@ -9,13 +9,26 @@ final class TemplateLibraryViewModel: ObservableObject {
     @Published var statusText = "准备扫描模板库…"
     @Published var totalBytes: Int64 = 0
 
-    @Published var selectedCategory: TemplateCategory = .effects {
+    @Published var selectedCategory: TemplateCategory? = nil {
         didSet { applyFilter() }
     }
     @Published var searchText = "" {
         didSet { scheduleFilter() }
     }
+    @Published var selectedGroup = "全部厂商" {
+        didSet { applyFilter() }
+    }
+    @Published var sizeRange: TemplateSizeRange = .all {
+        didSet { applyFilter() }
+    }
+    @Published var modifiedRange: TemplateModifiedRange = .all {
+        didSet { applyFilter() }
+    }
+    @Published var rootFilter: TemplateRootFilter = .all {
+        didSet { applyFilter() }
+    }
     @Published var selectedItemID: TemplateItem.ID?
+    @Published var errorMessage: String?
 
     /// 过滤后的完整结果（缓存，避免每次 body 重算）。
     @Published private(set) var filteredItems: [TemplateItem] = []
@@ -30,6 +43,21 @@ final class TemplateLibraryViewModel: ObservableObject {
     private let scanner = TemplateScanner()
 
     var canLoadMore: Bool { visibleItems.count < filteredItems.count }
+    var allCount: Int { items.count }
+    var groupOptions: [String] {
+        let groups = items
+            .filter { selectedCategory == nil || $0.category == selectedCategory }
+            .map(\.group)
+        return ["全部厂商"] + Array(Set(groups)).sorted()
+    }
+    var activeFilterCount: Int {
+        var count = 0
+        if selectedGroup != "全部厂商" { count += 1 }
+        if sizeRange != .all { count += 1 }
+        if modifiedRange != .all { count += 1 }
+        if rootFilter != .all { count += 1 }
+        return count
+    }
 
     func scanIfNeeded() {
         guard !hasScanned, !scanning else { return }
@@ -45,6 +73,11 @@ final class TemplateLibraryViewModel: ObservableObject {
         counts = [:]
         totalBytes = 0
         selectedItemID = nil
+        selectedGroup = "全部厂商"
+        sizeRange = .all
+        modifiedRange = .all
+        rootFilter = .all
+        errorMessage = nil
         statusText = "扫描中…"
 
         Task.detached(priority: .userInitiated) { [scanner] in
@@ -99,6 +132,43 @@ final class TemplateLibraryViewModel: ObservableObject {
         counts[category] ?? 0
     }
 
+    func resetFilters() {
+        searchText = ""
+        selectedGroup = "全部厂商"
+        sizeRange = .all
+        modifiedRange = .all
+        rootFilter = .all
+        applyFilter()
+    }
+
+    func delete(_ item: TemplateItem) {
+        guard item.isWritable, !scanning else { return }
+        statusText = "正在移到废纸篓：\(item.displayName)"
+        Task.detached(priority: .userInitiated) {
+            do {
+                try FileMover.trash(item.folderURL)
+                await MainActor.run {
+                    self.items.removeAll { $0.id == item.id }
+                    self.counts = Dictionary(grouping: self.items, by: \.category).mapValues(\.count)
+                    self.totalBytes = self.items.reduce(0) { $0 + $1.bytes }
+                    if self.selectedItemID == item.id {
+                        self.selectedItemID = nil
+                    }
+                    if !self.groupOptions.contains(self.selectedGroup) {
+                        self.selectedGroup = "全部厂商"
+                    }
+                    self.statusText = "已移到废纸篓：\(item.displayName)"
+                    self.applyFilter()
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = "删除失败：\(error.localizedDescription)"
+                    self.statusText = "删除失败"
+                }
+            }
+        }
+    }
+
     // MARK: - 过滤 + 分页
 
     private func scheduleFilter() {
@@ -111,17 +181,27 @@ final class TemplateLibraryViewModel: ObservableObject {
     }
 
     private func applyFilter() {
-        let base = items.filter { $0.category == selectedCategory }
+        if !groupOptions.contains(selectedGroup) {
+            selectedGroup = "全部厂商"
+        }
+
+        let now = Date()
+        var base = items.filter {
+            (selectedCategory == nil || $0.category == selectedCategory)
+                && (selectedGroup == "全部厂商" || $0.group == selectedGroup)
+                && sizeRange.matches($0.bytes)
+                && modifiedRange.matches($0.modifiedAt, now: now)
+                && rootFilter.matches($0.root)
+        }
         let q = searchText.trimmingCharacters(in: .whitespaces)
-        if q.isEmpty {
-            filteredItems = base
-        } else {
-            filteredItems = base.filter {
+        if !q.isEmpty {
+            base = base.filter {
                 $0.displayName.localizedCaseInsensitiveContains(q)
                     || $0.group.localizedCaseInsensitiveContains(q)
                     || $0.folderName.localizedCaseInsensitiveContains(q)
             }
         }
+        filteredItems = base
         displayLimit = pageSize
         refreshVisible()
         if let id = selectedItemID, !filteredItems.contains(where: { $0.id == id }) {

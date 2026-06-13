@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TemplateLibraryView: View {
     @StateObject private var model = TemplateLibraryViewModel()
+    @State private var itemPendingDelete: TemplateItem?
 
     private let columns = [GridItem(.adaptive(minimum: 168, maximum: 220), spacing: 14)]
 
@@ -12,12 +13,36 @@ struct TemplateLibraryView: View {
             gridArea
             if model.selectedItem != nil {
                 Divider()
-                TemplateDetailView(item: model.selectedItem!)
+                TemplateDetailView(item: model.selectedItem!, onDelete: { item in
+                    itemPendingDelete = item
+                })
                     .frame(width: 300)
             }
         }
         .background(Theme.background)
         .onAppear { model.scanIfNeeded() }
+        .confirmationDialog("删除这个模板？", isPresented: deleteConfirmationBinding, titleVisibility: .visible) {
+            Button("移到废纸篓", role: .destructive) {
+                if let item = itemPendingDelete {
+                    model.delete(item)
+                }
+                itemPendingDelete = nil
+            }
+            Button("取消", role: .cancel) {
+                itemPendingDelete = nil
+            }
+        } message: {
+            if let item = itemPendingDelete {
+                Text("将「\(item.displayName)」移到废纸篓。此操作不会永久删除，可从废纸篓恢复。")
+            }
+        }
+        .alert("模板操作失败", isPresented: errorAlertBinding) {
+            Button("好", role: .cancel) {
+                model.errorMessage = nil
+            }
+        } message: {
+            Text(model.errorMessage ?? "")
+        }
     }
 
     // MARK: - 分类导航
@@ -28,6 +53,24 @@ struct TemplateLibraryView: View {
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
                 .padding(.horizontal, 12).padding(.top, 12)
+            Button {
+                model.selectedCategory = nil
+            } label: {
+                HStack {
+                    Label("全部模板", systemImage: "square.grid.2x2")
+                        .foregroundStyle(model.selectedCategory == nil ? Theme.accent : Theme.textPrimary)
+                    Spacer()
+                    Text("\(model.allCount)")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .padding(.horizontal, 10).padding(.vertical, 7)
+                .background(model.selectedCategory == nil ? Theme.accent.opacity(0.12) : .clear)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 8)
+
             ForEach(TemplateCategory.allCases) { cat in
                 Button {
                     model.selectedCategory = cat
@@ -65,15 +108,18 @@ struct TemplateLibraryView: View {
 
     private var gridArea: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 10) {
-                Image(systemName: "magnifyingglass").foregroundStyle(Theme.textSecondary)
-                TextField("搜索模板名 / 厂商…", text: $model.searchText)
-                    .textFieldStyle(.plain)
-                Spacer()
-                Text(model.statusText)
-                    .font(.system(size: 11))
-                    .foregroundStyle(Theme.textSecondary)
-                    .lineLimit(1)
+            VStack(spacing: 8) {
+                HStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass").foregroundStyle(Theme.textSecondary)
+                    TextField("搜索模板名 / 厂商…", text: $model.searchText)
+                        .textFieldStyle(.plain)
+                    Spacer()
+                    Text(model.statusText)
+                        .font(.system(size: 11))
+                        .foregroundStyle(Theme.textSecondary)
+                        .lineLimit(1)
+                }
+                filterBar
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
             Divider()
@@ -109,43 +155,128 @@ struct TemplateLibraryView: View {
 
     private func card(_ item: TemplateItem) -> some View {
         let selected = model.selectedItemID == item.id
-        return Button {
-            model.selectedItemID = item.id
-        } label: {
-            VStack(alignment: .leading, spacing: 6) {
-                ThumbnailView(url: item.posterURL)
-                    .frame(height: 104)
-                    .frame(maxWidth: .infinity)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
-                    .overlay(alignment: .topTrailing) {
-                        if item.root == .system {
-                            Text("系统")
-                                .font(.system(size: 9, weight: .semibold))
-                                .padding(.horizontal, 5).padding(.vertical, 1)
-                                .background(.black.opacity(0.55))
-                                .foregroundStyle(.white)
-                                .clipShape(Capsule())
-                                .padding(5)
+        return VStack(alignment: .leading, spacing: 6) {
+            ThumbnailView(url: item.posterURL)
+                .frame(height: 104)
+                .frame(maxWidth: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .overlay(alignment: .topTrailing) {
+                    HStack(spacing: 4) {
+                        if item.isWritable {
+                            deleteButton(item)
                         }
+                        Text(item.root.rawValue)
+                            .font(.system(size: 9, weight: .semibold))
+                            .padding(.horizontal, 5).padding(.vertical, 1)
+                            .background(.black.opacity(0.55))
+                            .foregroundStyle(.white)
+                            .clipShape(Capsule())
                     }
-                Text(item.displayName)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-                    .lineLimit(1).truncationMode(.middle)
-                Text(item.group)
-                    .font(.system(size: 10))
-                    .foregroundStyle(Theme.textSecondary)
-                    .lineLimit(1)
+                    .padding(5)
+                }
+            Text(item.displayName)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+                .lineLimit(1).truncationMode(.middle)
+            Text(item.group)
+                .font(.system(size: 10))
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(1)
+            HStack(spacing: 6) {
+                Text(DisplayFormat.byteString(item.bytes))
+                Text(DisplayFormat.dateString(item.modifiedAt))
             }
-            .padding(8)
-            .background(Theme.panel)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(selected ? Theme.accent : Theme.line, lineWidth: selected ? 2 : 1)
-            )
+            .font(.system(size: 9))
+            .foregroundStyle(Theme.textSecondary)
+            .lineLimit(1)
+        }
+        .padding(8)
+        .background(Theme.panel)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(selected ? Theme.accent : Theme.line, lineWidth: selected ? 2 : 1)
+        )
+        .contentShape(RoundedRectangle(cornerRadius: 8))
+        .onTapGesture {
+            model.selectedItemID = item.id
+        }
+    }
+
+    private var filterBar: some View {
+        HStack(spacing: 8) {
+            Picker("厂商", selection: $model.selectedGroup) {
+                ForEach(model.groupOptions, id: \.self) { group in
+                    Text(group).tag(group)
+                }
+            }
+            .frame(maxWidth: 180)
+
+            Picker("大小", selection: $model.sizeRange) {
+                ForEach(TemplateSizeRange.allCases) { range in
+                    Text(range.rawValue).tag(range)
+                }
+            }
+            .frame(maxWidth: 150)
+
+            Picker("修改时间", selection: $model.modifiedRange) {
+                ForEach(TemplateModifiedRange.allCases) { range in
+                    Text(range.rawValue).tag(range)
+                }
+            }
+            .frame(maxWidth: 150)
+
+            Picker("来源", selection: $model.rootFilter) {
+                ForEach(TemplateRootFilter.allCases) { source in
+                    Text(source.rawValue).tag(source)
+                }
+            }
+            .frame(maxWidth: 130)
+
+            if model.activeFilterCount > 0 || !model.searchText.isEmpty {
+                Button {
+                    model.resetFilters()
+                } label: {
+                    Label("重置", systemImage: "xmark.circle")
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Theme.accent)
+            }
+
+            Spacer()
+            Text("显示 \(model.filteredItems.count) 项")
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textSecondary)
+        }
+        .font(.system(size: 11))
+    }
+
+    private func deleteButton(_ item: TemplateItem) -> some View {
+        Button {
+            itemPendingDelete = item
+        } label: {
+            Image(systemName: "trash")
+                .font(.system(size: 10, weight: .semibold))
+                .frame(width: 20, height: 18)
+                .background(Theme.danger.opacity(0.9))
+                .foregroundStyle(.white)
+                .clipShape(Capsule())
         }
         .buttonStyle(.plain)
+    }
+
+    private var deleteConfirmationBinding: Binding<Bool> {
+        Binding(
+            get: { itemPendingDelete != nil },
+            set: { if !$0 { itemPendingDelete = nil } }
+        )
+    }
+
+    private var errorAlertBinding: Binding<Bool> {
+        Binding(
+            get: { model.errorMessage != nil },
+            set: { if !$0 { model.errorMessage = nil } }
+        )
     }
 
     private var loading: some View {
@@ -163,7 +294,7 @@ struct TemplateLibraryView: View {
             Spacer()
             Image(systemName: "square.grid.2x2")
                 .font(.system(size: 34)).foregroundStyle(Theme.textSecondary)
-            Text(model.searchText.isEmpty ? "此分类暂无模板" : "没有匹配「\(model.searchText)」的模板")
+            Text(model.searchText.isEmpty ? "没有符合筛选条件的模板" : "没有匹配「\(model.searchText)」的模板")
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
         }

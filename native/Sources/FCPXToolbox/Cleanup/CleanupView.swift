@@ -52,19 +52,48 @@ struct CleanupView: View {
                     .truncationMode(.middle)
             }
             Spacer()
-            Button("选择目录") { model.chooseDirectory() }
-                .disabled(model.isBusy)
-            Button("重新扫描") { model.rescan() }
-                .disabled(!model.canRescan)
-            Button("停止") { model.stopScan() }
-                .disabled(model.phase != .scanning)
-            Button("选择全部安全项") { model.selectAllSafe() }
-                .disabled(!model.canSelectSafe)
-            Button("清理所选") { showCleanConfirm = true }
-                .disabled(!model.canClean)
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.accent)
+            toolbarButton("选择目录", systemImage: "folder.badge.plus", isEnabled: !model.isBusy) {
+                model.chooseDirectory()
+            }
+            toolbarButton("重新扫描", systemImage: "arrow.clockwise", isEnabled: model.canRescan) {
+                model.rescan()
+            }
+            toolbarButton("停止", systemImage: "stop.circle", isEnabled: model.phase == .scanning) {
+                model.stopScan()
+            }
+            toolbarButton("选择安全项", systemImage: "checkmark.square", isEnabled: model.canSelectSafe) {
+                model.selectAllSafe()
+            }
+            toolbarButton("清理所选", systemImage: "trash", isEnabled: model.canClean, isProminent: true) {
+                showCleanConfirm = true
+            }
         }
+    }
+
+    private func toolbarButton(
+        _ title: String,
+        systemImage: String,
+        isEnabled: Bool,
+        isProminent: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.system(size: 12, weight: .semibold))
+                .lineLimit(1)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(isProminent ? Theme.accent : Theme.panel)
+                .foregroundStyle(isProminent ? Color.white : Theme.accent)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(isProminent ? Theme.accent : Theme.line, lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .opacity(isEnabled ? 1 : 0.42)
+        }
+        .buttonStyle(.plain)
+        .disabled(!isEnabled)
     }
 
     // MARK: - 统计卡片

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TemplateDetailView: View {
     let item: TemplateItem
+    var onDelete: ((TemplateItem) -> Void)?
 
     var body: some View {
         ScrollView {
@@ -47,6 +48,15 @@ struct TemplateDetailView: View {
                     Label("在 Finder 显示", systemImage: "folder")
                 }
                 .frame(maxWidth: .infinity)
+
+                if item.isWritable {
+                    Button(role: .destructive) {
+                        onDelete?(item)
+                    } label: {
+                        Label("删除模板", systemImage: "trash")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
 
                 Spacer(minLength: 0)
             }
