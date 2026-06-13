@@ -4,7 +4,7 @@ set -eu
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP_NAME="FCPX 工具箱"
 NATIVE_APP_NAME="FCPX 工具箱"
-VERSION="0.3.0"
+VERSION="0.3.1"
 PAYLOAD="$HOME/Library/Application Support/FCPX Tools/FCPXToolboxPayload.app"
 SOURCE_APP="$ROOT/dist/native-v0.3/$NATIVE_APP_NAME.app"
 LAUNCHER="/Applications/$APP_NAME.app"
@@ -35,12 +35,16 @@ do shell script "rm -rf /tmp/FCPXToolboxRuntime.app && /usr/bin/ditto --noextatt
 APPLESCRIPT
 
 /usr/bin/osacompile -o "$LAUNCHER" /tmp/fcpx-tools-launcher.applescript
+if [ -f "$PAYLOAD/Contents/Resources/AppIcon.icns" ]; then
+  /bin/cp "$PAYLOAD/Contents/Resources/AppIcon.icns" "$LAUNCHER/Contents/Resources/applet.icns"
+fi
 /usr/bin/xattr -cr "$LAUNCHER"
+/usr/bin/codesign --force --deep --sign - "$LAUNCHER" >/dev/null 2>&1 || true
 echo "已安装：$LAUNCHER"
 INSTALL
 
 chmod +x "$PACKAGE_DIR/安装.command"
-ditto -c -k --sequesterRsrc --keepParent "$PACKAGE_DIR" "$ROOT/dist/FCPXTools-$VERSION.zip"
+( cd "$ROOT/dist" && /usr/bin/zip -qry -X "FCPXTools-$VERSION.zip" "FCPXTools-$VERSION" )
 
 mkdir -p "$(dirname "$PAYLOAD")"
 rm -rf "$PAYLOAD" "$LAUNCHER"

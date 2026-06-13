@@ -1,6 +1,6 @@
 {
   "name": "fcpxtools",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A native macOS toolbox for inspecting Final Cut Pro libraries, reviewing Motion templates, and safely cleaning generated cache files.",
   "main": "src/main.js",
   "author": "Gary23333",

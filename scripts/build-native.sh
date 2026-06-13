@@ -3,7 +3,7 @@ set -eu
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP_NAME="FCPX 工具箱"
-VERSION="0.3.0"
+VERSION="0.3.1"
 EXEC="FCPXToolbox"
 CONFIG="${1:-release}"
 OUT="$ROOT/dist/native-v0.3/$APP_NAME.app"
