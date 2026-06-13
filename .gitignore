@@ -1,0 +1,34 @@
+# macOS
+.DS_Store
+._*
+
+# Node / Electron prototype
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Swift Package Manager
+native/.build/
+native/.swiftpm/
+.build/
+
+# Xcode / local IDE state
+DerivedData/
+*.xcuserdata/
+*.xcuserstate
+.vscode/
+.idea/
+.claude/
+
+# Build output
+dist/
+build/
+out/
+*.dmg
+*.zip
+
+# Runtime / cache
+*.log
+*.tmp

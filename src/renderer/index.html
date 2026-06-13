@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FCPX 清理助手</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="toolbar">
+        <section>
+          <h1>FCPX 清理助手</h1>
+          <p id="rootPath">选择包含 Final Cut Pro 资源库的目录开始扫描</p>
+        </section>
+        <nav class="actions">
+          <button id="chooseBtn" class="primary">选择目录</button>
+          <button id="rescanBtn" disabled>重新扫描</button>
+          <button id="cleanAllBtn" class="danger" disabled>一键清理</button>
+        </nav>
+      </header>
+
+      <section class="stats">
+        <article>
+          <span>项目总占用</span>
+          <strong id="totalProjectSize">0 B</strong>
+        </article>
+        <article>
+          <span>可清理空间</span>
+          <strong id="totalSize">0 B</strong>
+        </article>
+        <article>
+          <span>FCPX 项目</span>
+          <strong id="projectCount">0</strong>
+        </article>
+        <article>
+          <span>扫描状态</span>
+          <strong id="statusText">待扫描</strong>
+        </article>
+      </section>
+
+      <section class="content">
+        <aside class="panel tree-panel">
+          <div class="panel-title">完整目录</div>
+          <div id="treeView" class="tree empty">尚未选择目录</div>
+        </aside>
+
+        <section class="panel project-panel">
+          <div class="panel-title">FCPX 项目与垃圾文件</div>
+          <div id="projectList" class="project-list empty">扫描后会在这里显示每个项目对应的可清理文件</div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./renderer.js"></script>
+  </body>
+</html>

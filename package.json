@@ -1,0 +1,37 @@
+{
+  "name": "fcpxtools",
+  "version": "0.3.0",
+  "description": "A native macOS toolbox for inspecting Final Cut Pro libraries, reviewing Motion templates, and safely cleaning generated cache files.",
+  "main": "src/main.js",
+  "author": "Gary23333",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac",
+    "pack": "electron-builder --mac --dir"
+  },
+  "devDependencies": {
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "io.github.gary23333.fcpxtools",
+    "productName": "FCPX 工具箱",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/AppIcon.icns",
+      "package.json"
+    ],
+    "mac": {
+      "icon": "assets/AppIcon.icns",
+      "category": "public.app-category.video",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    }
+  }
+}
