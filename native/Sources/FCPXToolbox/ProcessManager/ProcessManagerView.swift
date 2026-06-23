@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import Darwin
 
 @MainActor
 final class ProcessManagerViewModel: ObservableObject {
