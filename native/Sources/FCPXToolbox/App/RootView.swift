@@ -2,6 +2,8 @@ import SwiftUI
 
 /// 工具箱顶层分区。模板库（含字幕=Titles 分类）在阶段 2 接入。
 enum ToolSection: String, CaseIterable, Identifiable {
+    case quickAccess = "快捷打开"
+    case process = "进程管理"
     case cleanup = "清理"
     case templates = "模板库"
 
@@ -9,6 +11,8 @@ enum ToolSection: String, CaseIterable, Identifiable {
 
     var systemImage: String {
         switch self {
+        case .quickAccess: return "bolt.horizontal.circle"
+        case .process: return "activity"
         case .cleanup: return "sparkles"
         case .templates: return "square.grid.2x2"
         }
@@ -29,6 +33,10 @@ struct RootView: View {
             .listStyle(.sidebar)
         } detail: {
             switch section {
+            case .quickAccess:
+                QuickAccessView()
+            case .process:
+                ProcessManagerView()
             case .cleanup:
                 CleanupView(model: cleanupModel)
             case .templates:
