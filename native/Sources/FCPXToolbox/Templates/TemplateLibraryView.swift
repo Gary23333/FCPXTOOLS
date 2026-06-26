@@ -4,7 +4,7 @@ struct TemplateLibraryView: View {
     @ObservedObject var model: TemplateLibraryViewModel
     @State private var itemPendingDelete: TemplateItem?
 
-    private let columns = [GridItem(.adaptive(minimum: 168), spacing: 14)]
+    private let columns = [GridItem(.adaptive(minimum: 168), spacing: 22)]
 
     var body: some View {
         HStack(spacing: 0) {
@@ -126,12 +126,12 @@ struct TemplateLibraryView: View {
                 emptyState
             } else {
                 ScrollView {
-                    LazyVGrid(columns: columns, spacing: 14) {
+                    LazyVGrid(columns: columns, spacing: 22) {
                         ForEach(model.visibleItems) { item in
                             card(item)
                         }
                     }
-                    .padding(16)
+                    .padding(20)
                 }
                 Divider()
                 paginationBar
