@@ -35,7 +35,7 @@ struct NeoBadge: View {
 
     var body: some View {
         Text(text)
-            .font(FT.label(10, weight: .semibold))
+            .font(FontFamily.caption(11, weight: .semibold))
             .foregroundStyle(fgColor)
             .padding(.horizontal, Spacing.xxs)
             .padding(.vertical, 2)

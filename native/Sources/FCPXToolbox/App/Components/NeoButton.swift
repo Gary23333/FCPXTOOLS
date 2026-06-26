@@ -10,9 +10,9 @@ struct NeoButton: View {
     }
 
     enum Size {
-        case sm   // h:8 v:4, font:11
-        case md   // h:10 v:6, font:12
-        case lg   // h:14 v:8, font:13
+        case sm   // h:10 v:6, font:12
+        case md   // h:12 v:8, font:13
+        case lg   // h:16 v:10, font:14
     }
 
     let title: String
@@ -24,17 +24,17 @@ struct NeoButton: View {
 
     private var padding: (h: CGFloat, v: CGFloat) {
         switch size {
-        case .sm: return (8, 4)
-        case .md: return (10, 6)
-        case .lg: return (14, 8)
+        case .sm: return (10, 6)
+        case .md: return (12, 8)
+        case .lg: return (16, 10)
         }
     }
 
     private var fontSize: CGFloat {
         switch size {
-        case .sm: return 11
-        case .md: return 12
-        case .lg: return 13
+        case .sm: return 12
+        case .md: return 13
+        case .lg: return 14
         }
     }
 
@@ -72,7 +72,7 @@ struct NeoButton: View {
                         .font(.system(size: fontSize - 1, weight: .semibold))
                 }
                 Text(title)
-                    .font(FT.data(fontSize, weight: .semibold))
+                    .font(FontFamily.bodyText(fontSize, weight: .semibold))
             }
             .lineLimit(1)
             .padding(.horizontal, padding.h)

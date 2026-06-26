@@ -50,7 +50,7 @@ struct TemplateLibraryView: View {
     private var categoryRail: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("模板分类")
-                .font(FT.label(12, weight: .semibold))
+                .font(FontFamily.caption(12, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
                 .padding(.horizontal, 12).padding(.top, 12)
             Button {
@@ -111,7 +111,7 @@ struct TemplateLibraryView: View {
                     NeoInput(placeholder: "搜索模板名 / 厂商…", text: $model.searchText, isSearch: true)
                     Spacer()
                     Text(model.statusText)
-                        .font(FT.data(11))
+                        .font(FontFamily.caption(12))
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(1)
                 }
@@ -157,18 +157,18 @@ struct TemplateLibraryView: View {
                     .padding(5)
                 }
             Text(item.displayName)
-                .font(FT.data(12, weight: .medium))
+                .font(FontFamily.bodyText(12, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1).truncationMode(.middle)
             Text(item.group)
-                .font(FT.data(10))
+                .font(FontFamily.caption(11))
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(1)
             HStack(spacing: 6) {
                 Text(DisplayFormat.byteString(item.bytes))
                 Text(DisplayFormat.dateString(item.modifiedAt))
             }
-            .font(FT.data(9))
+            .font(FT.data(11))
             .foregroundStyle(Theme.textSecondary)
             .lineLimit(1)
         }
@@ -211,10 +211,10 @@ struct TemplateLibraryView: View {
 
             Spacer()
             Text("显示 \(model.filteredItems.count) 项")
-                .font(FT.data(11))
+                .font(FontFamily.caption(12))
                 .foregroundStyle(Theme.textSecondary)
         }
-        .font(FT.data(11))
+        .font(FontFamily.caption(12))
     }
 
     private var groupMenu: some View {
@@ -271,10 +271,10 @@ struct TemplateLibraryView: View {
                 .truncationMode(.tail)
             Spacer(minLength: 2)
             Image(systemName: "chevron.down")
-                .font(FT.data(9, weight: .semibold))
+                .font(.system(size: 9, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
         }
-        .font(FT.data(11, weight: .medium))
+        .font(FontFamily.caption(12, weight: .medium))
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -288,7 +288,7 @@ struct TemplateLibraryView: View {
     private var paginationBar: some View {
         HStack(spacing: 10) {
             Text("每页 \(model.pageSize) 项")
-                .font(FT.data(11))
+                .font(FontFamily.caption(12))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
             pagerButton("首页", systemImage: "backward.end.fill", enabled: model.canGoPreviousPage) {
@@ -298,7 +298,7 @@ struct TemplateLibraryView: View {
                 model.goToPreviousPage()
             }
             Text("第 \(model.currentPage) / \(model.totalPages) 页 · \(model.pageRangeText)")
-                .font(FT.data(11, weight: .medium))
+                .font(FontFamily.caption(12, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
                 .frame(minWidth: 150)
             pagerButton("下一页", systemImage: "chevron.right", enabled: model.canGoNextPage) {
@@ -316,6 +316,7 @@ struct TemplateLibraryView: View {
     private func pagerButton(_ title: String, systemImage: String, enabled: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Label(title, systemImage: systemImage)
+                .font(.system(size: 12, weight: .medium))
                 .labelStyle(.iconOnly)
                 .frame(width: 28, height: 24)
                 .foregroundStyle(enabled ? Theme.accent : Theme.textSecondary)
@@ -336,7 +337,7 @@ struct TemplateLibraryView: View {
             itemPendingDelete = item
         } label: {
             Image(systemName: "trash")
-                .font(FT.data(10, weight: .semibold))
+                .font(.system(size: 10, weight: .semibold))
                 .frame(width: 20, height: 18)
                 .background(Theme.danger.opacity(0.9))
                 .foregroundStyle(.white)
@@ -363,7 +364,7 @@ struct TemplateLibraryView: View {
         VStack(spacing: 10) {
             Spacer()
             ProgressView().controlSize(.large)
-            Text(model.statusText).font(FT.data(12)).foregroundStyle(Theme.textSecondary)
+            Text(model.statusText).font(FontFamily.caption(12)).foregroundStyle(Theme.textSecondary)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -373,8 +374,10 @@ struct TemplateLibraryView: View {
         VStack(spacing: 8) {
             Spacer()
             Image(systemName: "square.grid.2x2")
-                .font(FT.data(34)).foregroundStyle(Theme.textSecondary)
+                .font(.system(size: 34, weight: .regular))
+                .foregroundStyle(Theme.textSecondary)
             Text(model.searchText.isEmpty ? "没有符合筛选条件的模板" : "没有匹配「\(model.searchText)」的模板")
+                .font(FontFamily.bodyText(14))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
         }

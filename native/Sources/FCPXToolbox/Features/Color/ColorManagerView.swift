@@ -86,16 +86,17 @@ struct ColorManagerView: View {
                     VStack(spacing: Spacing.sm) {
                         NeoProgress(value: 0.5)
                         Text("正在扫描色彩资产...")
-                            .font(FT.label())
+                            .font(FontFamily.bodyText(13))
                             .foregroundStyle(Theme.textSecondary)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if filteredItems.isEmpty {
                     VStack(spacing: Spacing.xs) {
                         Image(systemName: "paintpalette")
-                            .font(FT.metric())
+                            .font(.system(size: 28, weight: .bold))
                             .foregroundStyle(Theme.textSecondary)
                         Text("未发现符合条件的 LUT 或预置")
+                            .font(FontFamily.bodyText(13))
                             .foregroundStyle(Theme.textSecondary)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -105,13 +106,13 @@ struct ColorManagerView: View {
                             HStack {
                                 Image(systemName: item.type == .lut ? "square.stack.3d.down.right.fill" : "slider.horizontal.below.rectangle")
                                     .foregroundColor(Theme.accent)
-                                    .font(FT.data())
+                                    .font(.system(size: 13))
 
                                 VStack(alignment: .leading, spacing: Spacing.xs) {
                                     Text(item.displayName)
-                                        .font(FT.data(13, weight: .medium))
+                                        .font(FontFamily.bodyText(13, weight: .medium))
                                     Text(item.name)
-                                        .font(FT.label())
+                                        .font(FontFamily.caption(11))
                                         .foregroundStyle(Theme.textSecondary)
                                 }
 
@@ -143,6 +144,7 @@ struct ColorManagerView: View {
             } else {
                 VStack {
                     Text("请选择色彩项目以查看详情")
+                        .font(FontFamily.bodyText(13))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 .frame(width: 340)
@@ -154,10 +156,10 @@ struct ColorManagerView: View {
         .onAppear {
             runScan()
         }
-        .onChange(of: selectedItemID) { _ in
+        .onChange(of: selectedItemID) {
             updatePreview()
         }
-        .onChange(of: customImage) { _ in
+        .onChange(of: customImage) {
             updatePreview()
         }
         .alert("确定要删除吗？", isPresented: $showingDeleteAlert, presenting: pendingDeleteItem) { item in
@@ -177,13 +179,12 @@ struct ColorManagerView: View {
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 HStack {
                     Image(systemName: item.type == .lut ? "cube.transparent.fill" : "paintpalette.fill")
-                        .font(FT.metric())
+                        .font(.system(size: 28, weight: .bold))
                         .foregroundColor(Theme.accent)
 
                     VStack(alignment: .leading, spacing: Spacing.xxxs) {
                         Text(item.displayName)
-                            .font(FT.title())
-                            .fontWeight(.bold)
+                            .font(FontFamily.heading(18, weight: .bold))
                             .lineLimit(1)
                         NeoBadge(
                             text: item.type.rawValue,
@@ -208,7 +209,7 @@ struct ColorManagerView: View {
                     VStack(alignment: .leading, spacing: Spacing.xxs) {
                         HStack {
                             Text("效果预览")
-                                .font(FT.title())
+                                .font(FontFamily.heading(18, weight: .bold))
                                 .foregroundStyle(Theme.textPrimary)
 
                             Spacer()
@@ -257,7 +258,7 @@ struct ColorManagerView: View {
 
                         if previewImage == nil && !isProcessingPreview {
                             Text("仅支持 3D LUT (.cube) 格式的预览")
-                                .font(FT.label())
+                                .font(FontFamily.caption(11))
                                 .foregroundStyle(Theme.textSecondary)
                                 .frame(maxWidth: .infinity, alignment: .center)
                         }
@@ -268,10 +269,10 @@ struct ColorManagerView: View {
 
                 VStack(alignment: .leading, spacing: Spacing.xxxs) {
                     Text("文件路径")
-                        .font(FT.label())
+                        .font(FontFamily.caption(11))
                         .foregroundStyle(Theme.textSecondary)
                     Text(item.url.path)
-                        .font(.system(.body, design: .monospaced))
+                        .font(FT.data(13))
                         .textSelection(.enabled)
                 }
 
@@ -293,12 +294,14 @@ struct ColorManagerView: View {
     private func infoRow(label: String, value: String) -> some View {
         HStack {
             Text(label)
+                .font(FontFamily.bodyText(13))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
             Text(value)
+                .font(FT.data())
                 .fontWeight(.medium)
+                .foregroundStyle(Theme.textPrimary)
         }
-        .font(FT.data())
     }
 
     // MARK: - 逻辑

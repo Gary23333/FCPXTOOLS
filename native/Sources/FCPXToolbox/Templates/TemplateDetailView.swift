@@ -17,10 +17,10 @@ struct TemplateDetailView: View {
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(item.displayName)
-                        .font(FT.data(17, weight: .semibold))
+                        .font(FontFamily.heading(17, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Text("\(item.category.displayName) · \(item.group)")
-                        .font(FT.data(12))
+                        .font(FontFamily.caption(12))
                         .foregroundStyle(Theme.textSecondary)
                 }
 
@@ -28,13 +28,13 @@ struct TemplateDetailView: View {
 
                 infoRow("分类", item.category.displayName)
                 infoRow("厂商 / 主题", item.group)
-                infoRow("大小", DisplayFormat.byteString(item.bytes))
-                infoRow("修改时间", DisplayFormat.dateString(item.modifiedAt))
-                infoRow("来源", item.root.rawValue + (item.isWritable ? "" : "（只读）"))
-                infoRow("文件夹名", item.folderName)
+                infoRow("大小", DisplayFormat.byteString(item.bytes), valueIsData: true)
+                infoRow("修改时间", DisplayFormat.dateString(item.modifiedAt), valueIsData: true)
+                infoRow("来源", item.root.rawValue + (item.isWritable ? "" : "（只读）"), valueIsData: true)
+                infoRow("文件夹名", item.folderName, valueIsData: true)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("路径").font(FT.data(11)).foregroundStyle(Theme.textSecondary)
+                    Text("路径").font(FontFamily.caption(12)).foregroundStyle(Theme.textSecondary)
                     Text(item.folderURL.path)
                         .font(FT.data(11))
                         .foregroundStyle(Theme.textPrimary)
@@ -71,14 +71,14 @@ struct TemplateDetailView: View {
         .background(Theme.panel)
     }
 
-    private func infoRow(_ label: String, _ value: String) -> some View {
+    private func infoRow(_ label: String, _ value: String, valueIsData: Bool = false) -> some View {
         HStack(alignment: .top) {
             Text(label)
-                .font(FT.data(12))
+                .font(FontFamily.caption(12))
                 .foregroundStyle(Theme.textSecondary)
                 .frame(width: 76, alignment: .leading)
             Text(value)
-                .font(FT.data(12))
+                .font(valueIsData ? FT.data(12) : FontFamily.bodyText(12))
                 .foregroundStyle(Theme.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

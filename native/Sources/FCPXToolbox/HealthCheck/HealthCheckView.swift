@@ -84,9 +84,10 @@ final class HealthCheckViewModel: ObservableObject {
             for (index, lib) in libraries.enumerated() {
                 if Task.isCancelled { break }
                 let name = lib.lastPathComponent
+                let progress = Double(index) / Double(libraries.count)
                 await MainActor.run {
                     self.statusText = "正在检查 \(name)（\(index + 1)/\(libraries.count)）"
-                    self.progressValue = Double(index) / Double(libraries.count)
+                    self.progressValue = progress
                 }
                 let report = HealthCheckScan.buildReport(for: lib)
                 await MainActor.run {
@@ -131,55 +132,40 @@ final class HealthCheckViewModel: ObservableObject {
         let bundleURL = report.libraryURL
         let title = item.title
 
-        Task.detached(priority: .userInitiated) {
+        Task.detached(priority: .userInitiated) { [bundleURL, title] in
+            let subfolderNames: [String] = {
+                switch title {
+                case "渲染缓存": return ["Render Files"]
+                case "代理媒体": return ["Proxy Media"]
+                case "优化媒体": return ["High Quality Media"]
+                default: return []
+                }
+            }()
+
+            let targetsToDelete = HealthCheckScan.findTargetSubfolders(
+                in: bundleURL,
+                subfolderNames: subfolderNames
+            )
+
             let fm = FileManager.default
-            var success = false
-
-            var subfolderNames: [String] = []
-            if title == "渲染缓存" {
-                subfolderNames = ["Render Files"]
-            } else if title == "代理媒体" {
-                subfolderNames = ["Proxy Media"]
-            } else if title == "优化媒体" {
-                subfolderNames = ["High Quality Media"]
+            var errors = 0
+            for url in targetsToDelete {
+                do {
+                    var resultingURL: NSURL?
+                    try fm.trashItem(at: url, resultingItemURL: &resultingURL)
+                } catch {
+                    errors += 1
+                }
             }
 
-            if !subfolderNames.isEmpty {
-                let enumerator = fm.enumerator(
-                    at: bundleURL,
-                    includingPropertiesForKeys: [.isDirectoryKey],
-                    options: [.skipsHiddenFiles]
-                )
-
-                var targetsToDelete: [URL] = []
-                if let enumr = enumerator {
-                    for case let url as URL in enumr {
-                        if subfolderNames.contains(url.lastPathComponent) {
-                            targetsToDelete.append(url)
-                            enumr.skipDescendants()
-                        }
-                    }
-                }
-
-                var errors = 0
-                for url in targetsToDelete {
-                    do {
-                        var resultingURL: NSURL?
-                        try fm.trashItem(at: url, resultingItemURL: &resultingURL)
-                    } catch {
-                        errors += 1
-                    }
-                }
-                success = (errors == 0 && !targetsToDelete.isEmpty)
-            }
+            let success = errors == 0 && !targetsToDelete.isEmpty
+            let repairStatusText = success
+                ? "修复「\(title)」完成！已安全清理对应的冗余缓存。"
+                : "修复「\(title)」已完成，部分项目可能无法直接删除。"
 
             await MainActor.run {
                 self.phase = .ready
-                if success {
-                    self.statusText = "修复「\(title)」完成！已安全清理对应的冗余缓存。"
-                } else {
-                    self.statusText = "修复「\(title)」已完成，部分项目可能无法直接删除。"
-                }
+                self.statusText = repairStatusText
                 self.rescan() // 重新扫描刷新状态
             }
         }
@@ -378,6 +364,26 @@ private enum HealthCheckScan {
             return Int64(cap)
         }
         return 0
+    }
+
+    /// 同步查找需要删除的目标子目录（避免在异步闭包中遍历 directoryEnumerator）。
+    static func findTargetSubfolders(in bundleURL: URL, subfolderNames: [String]) -> [URL] {
+        guard !subfolderNames.isEmpty else { return [] }
+        let fm = FileManager.default
+        var targets: [URL] = []
+        guard let enumerator = fm.enumerator(
+            at: bundleURL,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else { return [] }
+
+        for case let url as URL in enumerator {
+            if subfolderNames.contains(url.lastPathComponent) {
+                targets.append(url)
+                enumerator.skipDescendants()
+            }
+        }
+        return targets
     }
 
     // MARK: - 单项检查
@@ -586,13 +592,13 @@ struct HealthCheckView: View {
                 model.rescan()
             }
         }
-        .onChange(of: appState.globalProjectDir) { newDir in
+        .onChange(of: appState.globalProjectDir, initial: false) { _, newDir in
             if let newDir = newDir, model.rootURL != newDir {
                 model.rootURL = newDir
                 model.rescan()
             }
         }
-        .onChange(of: model.rootURL) { newRoot in
+        .onChange(of: model.rootURL, initial: false) { _, newRoot in
             if newRoot != appState.globalProjectDir {
                 appState.globalProjectDir = newRoot
             }
@@ -639,7 +645,7 @@ struct HealthCheckView: View {
         Card {
             VStack(alignment: .leading, spacing: Spacing.xxxs) {
                 Text(title)
-                    .font(FT.label(12))
+                    .font(FontFamily.caption(12))
                     .foregroundStyle(Theme.textSecondary)
                 Text(value)
                     .font(FT.metric(24))
@@ -670,7 +676,7 @@ struct HealthCheckView: View {
         Card {
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text("资源库列表")
-                    .font(FT.data(15, weight: .semibold))
+                    .font(FontFamily.heading(15, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 if model.reports.isEmpty {
                     emptyHint
@@ -695,12 +701,13 @@ struct HealthCheckView: View {
         VStack(spacing: Spacing.xxs) {
             Spacer()
             Image(systemName: "stethoscope")
-                .font(FT.metric())
+                .font(.system(size: 28, weight: .bold, design: .default))
                 .foregroundStyle(Theme.textSecondary)
             Text("选择 Final Cut Pro 资源库所在目录")
+                .font(FontFamily.bodyText(14))
                 .foregroundStyle(Theme.textSecondary)
             Text("扫描后可查看每个资源库的健康状态。")
-                .font(FT.data(12))
+                .font(FontFamily.caption(12))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
         }
@@ -710,16 +717,16 @@ struct HealthCheckView: View {
     private func libraryRow(_ report: LibraryHealthReport) -> some View {
         HStack(spacing: Spacing.xs) {
             Image(systemName: statusIcon(report.overallStatus))
-                .font(FT.data(14))
+                .font(.system(size: 14, weight: .regular, design: .default))
                 .foregroundStyle(statusColor(report.overallStatus))
             VStack(alignment: .leading, spacing: 2) {
                 Text(report.libraryName)
-                    .font(FT.data(13, weight: .medium))
+                    .font(FontFamily.bodyText(13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                 Text(DisplayFormat.dateString(report.modifiedAt))
-                    .font(FT.data(11))
+                    .font(FontFamily.caption(11))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
@@ -739,10 +746,10 @@ struct HealthCheckView: View {
                     VStack(spacing: Spacing.xxxs) {
                         Spacer()
                         Text("未选择资源库")
-                            .font(FT.title(18, weight: .semibold))
+                            .font(FontFamily.heading(18, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                         Text("扫描后选择一个资源库查看健康检查详情")
-                            .font(FT.data(12))
+                            .font(FontFamily.caption(12))
                             .foregroundStyle(Theme.textSecondary)
                         Spacer()
                     }
@@ -759,7 +766,7 @@ struct HealthCheckView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: Spacing.xxs) {
                         Text(report.libraryName)
-                            .font(FT.title(18, weight: .semibold))
+                            .font(FontFamily.heading(18, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                         statusBadge(report.overallStatus)
                     }
@@ -785,7 +792,7 @@ struct HealthCheckView: View {
 
             Divider()
             Text("检查项")
-                .font(FT.data(14, weight: .semibold))
+                .font(FontFamily.heading(14, weight: .semibold))
                 .foregroundStyle(Theme.textPrimary)
 
             ScrollView {
@@ -804,17 +811,17 @@ struct HealthCheckView: View {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: Spacing.xxxs) {
                     Text(item.title)
-                        .font(FT.data(13, weight: .medium))
+                        .font(FontFamily.bodyText(13, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                     NeoBadge(text: item.status.rawValue, style: badgeStyle(for: item.status))
                 }
                 Text(item.detail)
-                    .font(FT.data(11))
+                    .font(FontFamily.caption(11))
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 if let rec = item.recommendation {
                     Text("建议：\(rec)")
-                        .font(FT.data(11))
+                        .font(FontFamily.caption(11))
                         .foregroundStyle(statusColor(item.status))
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -835,7 +842,7 @@ struct HealthCheckView: View {
     private func statPair(_ title: String, _ value: String, _ color: Color) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(FT.label(11))
+                .font(FontFamily.caption(11))
                 .foregroundStyle(Theme.textSecondary)
             Text(value)
                 .font(FT.data(16, weight: .semibold))
@@ -854,7 +861,7 @@ struct HealthCheckView: View {
             NeoProgress(value: model.progressValue)
             HStack {
                 Text(model.statusText)
-                    .font(FT.data(12))
+                    .font(FontFamily.caption(12))
                     .foregroundStyle(Theme.textSecondary)
                 Spacer()
             }

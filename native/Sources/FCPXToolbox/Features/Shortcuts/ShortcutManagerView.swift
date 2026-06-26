@@ -49,14 +49,14 @@ struct ShortcutManagerView: View {
                     VStack(spacing: Spacing.sm) {
                         NeoProgress(value: 0.5)
                         Text("正在扫描快捷键配置...")
-                            .font(FT.label())
+                            .font(FontFamily.caption(12))
                             .foregroundStyle(Theme.textSecondary)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if filteredItems.isEmpty {
                     VStack(spacing: Spacing.xs) {
                         Image(systemName: "keyboard")
-                            .font(FT.metric())
+                            .font(.system(size: 28, weight: .bold))
                             .foregroundStyle(Theme.textSecondary)
                         Text("未发现符合条件的快捷键配置")
                             .foregroundStyle(Theme.textSecondary)
@@ -68,20 +68,20 @@ struct ShortcutManagerView: View {
                             HStack {
                                 Image(systemName: "keyboard.fill")
                                     .foregroundColor(Theme.accent)
-                                    .font(FT.data())
+                                    .font(.system(size: 13, weight: .regular))
 
                                 VStack(alignment: .leading, spacing: Spacing.xs) {
                                     Text(item.displayName)
-                                        .font(FT.data(13, weight: .medium))
+                                        .font(FontFamily.bodyText(13, weight: .medium))
                                     Text(item.name)
-                                        .font(FT.label())
+                                        .font(FontFamily.caption(12))
                                         .foregroundStyle(Theme.textSecondary)
                                 }
 
                                 Spacer()
 
                                 Text(DisplayFormat.byteString(item.sizeBytes))
-                                    .font(FT.label())
+                                    .font(FT.data(12))
                                     .foregroundStyle(Theme.textSecondary)
                             }
                             .tag(item.url)
@@ -106,7 +106,7 @@ struct ShortcutManagerView: View {
             } else {
                 VStack(spacing: Spacing.xs) {
                     Image(systemName: "keyboard")
-                        .font(FT.metric())
+                        .font(.system(size: 28, weight: .bold))
                         .foregroundStyle(Theme.textSecondary)
                     Text("请选择快捷键配置以查看详情")
                         .foregroundStyle(Theme.textSecondary)
@@ -137,15 +137,14 @@ struct ShortcutManagerView: View {
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 HStack {
                     Image(systemName: "keyboard.onehanded.left.fill")
-                        .font(FT.metric())
+                        .font(.system(size: 28, weight: .bold))
                         .foregroundColor(Theme.accent)
 
                     VStack(alignment: .leading, spacing: Spacing.xxxs) {
                         Text(item.displayName)
-                            .font(FT.title())
-                            .fontWeight(.bold)
+                            .font(FontFamily.heading(20))
                         Text(".fcpxcmd 配置文件")
-                            .font(FT.label())
+                            .font(FontFamily.caption(12))
                             .foregroundStyle(Theme.textSecondary)
                     }
                 }
@@ -153,9 +152,9 @@ struct ShortcutManagerView: View {
                 Divider()
 
                 Group {
-                    infoRow(label: "文件大小", value: DisplayFormat.byteString(item.sizeBytes))
+                    infoRow(label: "文件大小", value: DisplayFormat.byteString(item.sizeBytes), isData: true)
                     if let date = item.modifiedAt {
-                        infoRow(label: "修改时间", value: DisplayFormat.dateString(date))
+                        infoRow(label: "修改时间", value: DisplayFormat.dateString(date), isData: true)
                     }
                 }
 
@@ -163,7 +162,7 @@ struct ShortcutManagerView: View {
 
                 VStack(alignment: .leading, spacing: Spacing.xxxs) {
                     Text("文件路径")
-                        .font(FT.label())
+                        .font(FontFamily.caption(12))
                         .foregroundStyle(Theme.textSecondary)
                     Text(item.url.path)
                         .font(.system(.body, design: .monospaced))
@@ -175,14 +174,14 @@ struct ShortcutManagerView: View {
                 // 使用说明
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
                     Text("如何在 FCPX 中使用此配置？")
-                        .font(FT.data(13, weight: .bold))
+                        .font(FontFamily.bodyText(13, weight: .bold))
                         .foregroundStyle(Theme.accent)
 
                     Text("1. 在 FCPX 顶部菜单栏选择「Final Cut Pro」->「命令集」 (Command Sets)。")
                     Text("2. 从列表中选择「\(item.displayName)」即可激活对应的键盘快捷键布局。")
                     Text("3. 如果需要修改，可在命令集子菜单中选择「自定」 (Customize)。")
                 }
-                .font(FT.label())
+                .font(FontFamily.caption(12))
                 .foregroundStyle(Theme.textSecondary)
                 .padding(Spacing.xxs)
                 .background(Theme.background)
@@ -212,15 +211,15 @@ struct ShortcutManagerView: View {
         }
     }
 
-    private func infoRow(label: String, value: String) -> some View {
+    private func infoRow(label: String, value: String, isData: Bool = false) -> some View {
         HStack {
             Text(label)
+                .font(FontFamily.caption(12))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
             Text(value)
-                .fontWeight(.medium)
+                .font(isData ? FT.data(13, weight: .medium) : FontFamily.bodyText(13, weight: .medium))
         }
-        .font(FT.data())
     }
 
     // MARK: - 逻辑

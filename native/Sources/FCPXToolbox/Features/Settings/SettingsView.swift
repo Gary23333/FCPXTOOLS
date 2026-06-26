@@ -71,7 +71,7 @@ struct SettingsView: View {
                 // 默认扫描目录
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     Text("默认扫描目录")
-                        .font(FT.title())
+                        .font(FontFamily.heading(18))
                     HStack {
                         Text(prefs.defaultScanPath ?? "未设置（每次手动选择）")
                             .foregroundStyle(Theme.textSecondary)
@@ -93,7 +93,7 @@ struct SettingsView: View {
                 // 清理缓存前二次确认
                 Toggle("清理缓存前二次确认", isOn: $prefs.confirmBeforeClean)
                     .toggleStyle(.checkbox)
-                    .font(FT.data())
+                    .font(FontFamily.bodyText(14))
                     .foregroundStyle(Theme.textPrimary)
                     .padding(Spacing.lg)
                     .background(Theme.panel)
@@ -103,14 +103,14 @@ struct SettingsView: View {
                 // 启动默认加载版块
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     Text("启动默认加载版块")
-                        .font(FT.data())
+                        .font(FontFamily.bodyText(14, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Picker("启动默认加载版块", selection: $prefs.startupSection) {
                         ForEach(["清理助手", "模板库", "快捷打开", "健康检查", "归档管理", "快速字幕", "输出管理"], id: \.self) { section in
                             Text(section).tag(section)
                         }
                     }
-                    .font(FT.data())
+                    .font(FontFamily.bodyText(14))
                 }
                 .padding(Spacing.lg)
                 .background(Theme.panel)
@@ -128,7 +128,7 @@ struct SettingsView: View {
                 // 外观模式
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     Text("外观模式")
-                        .font(FT.data())
+                        .font(FontFamily.bodyText(14, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Picker("外观模式", selection: $prefs.appearanceMode) {
                         Text("跟随系统").tag(AppearanceMode.system)
@@ -136,7 +136,7 @@ struct SettingsView: View {
                         Text("深色模式").tag(AppearanceMode.dark)
                     }
                     .pickerStyle(.radioGroup)
-                    .font(FT.data())
+                    .font(FontFamily.bodyText(14))
                     .horizontalRadioGroupLayout()
                 }
                 .padding(Spacing.lg)
@@ -147,14 +147,14 @@ struct SettingsView: View {
                 // 语言
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     Text("语言 (Language)")
-                        .font(FT.data())
+                        .font(FontFamily.bodyText(14, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Picker("语言 (Language)", selection: $prefs.language) {
                         Text("跟随系统 (System)").tag("system")
                         Text("简体中文").tag("zh-Hans")
                         Text("English").tag("en")
                     }
-                    .font(FT.data())
+                    .font(FontFamily.bodyText(14))
                 }
                 .padding(Spacing.lg)
                 .background(Theme.panel)
@@ -172,7 +172,7 @@ struct SettingsView: View {
                 // 自动检查更新
                 Toggle("自动检查更新", isOn: $prefs.checkUpdatesAutomatically)
                     .toggleStyle(.checkbox)
-                    .font(FT.data())
+                    .font(FontFamily.bodyText(14))
                     .foregroundStyle(Theme.textPrimary)
                     .padding(Spacing.lg)
                     .background(Theme.panel)
@@ -182,19 +182,19 @@ struct SettingsView: View {
                 // 磁盘空间不足警报阈值
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     Text("磁盘空间不足警报阈值 (GB)")
-                        .font(FT.data())
+                        .font(FontFamily.bodyText(14, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Slider(value: $prefs.warnFreeSpaceBelowGB, in: 5...50, step: 5) {
                         Text("容量限制")
                     } minimumValueLabel: {
                         Text("5G")
-                            .font(FT.label())
+                            .font(FT.label(12))
                     } maximumValueLabel: {
                         Text("50G")
-                            .font(FT.label())
+                            .font(FT.label(12))
                     }
                     Text("当前阈值: \(Int(prefs.warnFreeSpaceBelowGB)) GB (磁盘剩余容量低于此值时将弹出警告)")
-                        .font(FT.label())
+                        .font(FontFamily.caption(12))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 .padding(Spacing.lg)

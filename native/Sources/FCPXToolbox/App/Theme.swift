@@ -15,8 +15,8 @@ enum Theme {
 
     // MARK: Text
     static let textPrimary = Color.dynamicColor(light: Color(hex: 0x111111), dark: Color(hex: 0xFFFFFF))
-    static let textSecondary = Color.dynamicColor(light: Color(hex: 0x666666), dark: Color(hex: 0x888888))
-    static let textMuted = Color.dynamicColor(light: Color(hex: 0x888888), dark: Color(hex: 0x555555))
+    static let textSecondary = Color.dynamicColor(light: Color(hex: 0x555555), dark: Color(hex: 0xAAAAAA))
+    static let textMuted = Color.dynamicColor(light: Color(hex: 0x888888), dark: Color(hex: 0x666666))
 
     // MARK: Accent
     static let accent = Color(hex: 0x0040FF)
@@ -93,20 +93,21 @@ enum ShadowLevel {
 
 // MARK: - Font Tokens
 
-/// 21th 等宽字体令牌。优先使用 Geist Mono，回退到 Menlo。
+/// 21th 等宽字体令牌。优先使用 Geist Mono，回退到系统等宽字体。
+/// 专用于数据、代码、路径、字节、版本号、状态值等需要等宽对齐的场景。
 enum FT {
-    /// 大写标签 (section headers, badges)
-    static func label(_ size: CGFloat = 10, weight: Font.Weight = .medium) -> Font {
+    /// 大写标签 (badges, status pills)
+    static func label(_ size: CGFloat = 11, weight: Font.Weight = .medium) -> Font {
         FontLoader.font(size: size, weight: weight)
     }
 
-    /// 数据文本 (body, list rows, descriptions)
+    /// 数据文本 (paths, byte strings, metrics)
     static func data(_ size: CGFloat = 13, weight: Font.Weight = .regular) -> Font {
         FontLoader.font(size: size, weight: weight)
     }
 
-    /// 页面标题
-    static func title(_ size: CGFloat = 22, weight: Font.Weight = .bold) -> Font {
+    /// 页面/卡片标题
+    static func title(_ size: CGFloat = 20, weight: Font.Weight = .bold) -> Font {
         FontLoader.font(size: size, weight: weight)
     }
 
@@ -118,6 +119,30 @@ enum FT {
     /// 侧边栏品牌文字
     static func brand(_ size: CGFloat = 12, weight: Font.Weight = .bold) -> Font {
         FontLoader.font(size: size, weight: weight)
+    }
+}
+
+/// UI 比例字体令牌。使用系统默认比例字体（SF Pro / PingFang SC），
+/// 用于正文、标题、标签等需要长时间阅读的场景，提升可读性。
+enum FontFamily {
+    /// 大标题 / Hero 标题
+    static func hero(_ size: CGFloat = 32, weight: Font.Weight = .bold) -> Font {
+        .system(size: size, weight: weight, design: .default)
+    }
+
+    /// 页面标题 / 模块标题
+    static func heading(_ size: CGFloat = 22, weight: Font.Weight = .bold) -> Font {
+        .system(size: size, weight: weight, design: .default)
+    }
+
+    /// 正文 / 列表项 / 卡片说明
+    static func bodyText(_ size: CGFloat = 14, weight: Font.Weight = .regular) -> Font {
+        .system(size: size, weight: weight, design: .default)
+    }
+
+    /// 小标签 / 辅助文字 / 状态栏
+    static func caption(_ size: CGFloat = 11, weight: Font.Weight = .regular) -> Font {
+        .system(size: size, weight: weight, design: .default)
     }
 }
 

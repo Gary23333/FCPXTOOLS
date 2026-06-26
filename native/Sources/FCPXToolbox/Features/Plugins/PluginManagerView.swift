@@ -72,14 +72,14 @@ struct PluginManagerView: View {
                     VStack(spacing: Spacing.sm) {
                         NeoProgress(value: 0.5)
                         Text("正在扫描插件...")
-                            .font(FT.label())
+                            .font(FontFamily.caption(12))
                             .foregroundStyle(Theme.textSecondary)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if filteredItems.isEmpty {
                     VStack(spacing: Spacing.xs) {
                         Image(systemName: "puzzlepiece")
-                            .font(FT.metric())
+                            .font(.system(size: 28, weight: .bold))
                             .foregroundStyle(Theme.textSecondary)
                         Text("未发现符合条件的插件")
                             .foregroundStyle(Theme.textSecondary)
@@ -91,20 +91,20 @@ struct PluginManagerView: View {
                             HStack {
                                 Image(systemName: item.isEnabled ? "puzzlepiece.fill" : "puzzlepiece")
                                     .foregroundColor(item.isEnabled ? Theme.accent : Theme.textSecondary)
-                                    .font(FT.data())
+                                    .font(.system(size: 13, weight: .regular))
 
                                 VStack(alignment: .leading, spacing: Spacing.xs) {
                                     Text(item.displayName)
-                                        .font(FT.data(13, weight: .medium))
+                                        .font(FontFamily.bodyText(13, weight: .medium))
                                     Text(item.name)
-                                        .font(FT.label())
+                                        .font(FontFamily.caption(12))
                                         .foregroundStyle(Theme.textSecondary)
                                 }
 
                                 Spacer()
 
                                 Text(DisplayFormat.byteString(item.sizeBytes))
-                                    .font(FT.label())
+                                    .font(FT.data(12))
                                     .foregroundStyle(Theme.textSecondary)
 
                                 Toggle("", isOn: Binding(
@@ -166,13 +166,12 @@ struct PluginManagerView: View {
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 HStack {
                     Image(systemName: "puzzlepiece.extension.fill")
-                        .font(FT.metric())
+                        .font(.system(size: 28, weight: .bold))
                         .foregroundColor(Theme.accent)
 
                     VStack(alignment: .leading, spacing: Spacing.xxxs) {
                         Text(item.displayName)
-                            .font(FT.title())
-                            .fontWeight(.bold)
+                            .font(FontFamily.heading(20))
                         NeoBadge(
                             text: item.isEnabled ? "启用中" : "已禁用",
                             style: item.isEnabled ? .safe : .danger
@@ -185,15 +184,15 @@ struct PluginManagerView: View {
                 Group {
                     infoRow(label: "类型", value: item.type.rawValue)
                     infoRow(label: "位置", value: item.location.rawValue)
-                    infoRow(label: "大小", value: DisplayFormat.byteString(item.sizeBytes))
-                    infoRow(label: "文件名", value: item.name)
+                    infoRow(label: "大小", value: DisplayFormat.byteString(item.sizeBytes), isData: true)
+                    infoRow(label: "文件名", value: item.name, isData: true)
                 }
 
                 Divider()
 
                 VStack(alignment: .leading, spacing: Spacing.xxxs) {
                     Text("完整路径")
-                        .font(FT.label())
+                        .font(FontFamily.caption(12))
                         .foregroundStyle(Theme.textSecondary)
                     Text(item.url.path)
                         .font(.system(.body, design: .monospaced))
@@ -226,15 +225,15 @@ struct PluginManagerView: View {
         }
     }
 
-    private func infoRow(label: String, value: String) -> some View {
+    private func infoRow(label: String, value: String, isData: Bool = false) -> some View {
         HStack {
             Text(label)
+                .font(FontFamily.caption(12))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
             Text(value)
-                .fontWeight(.medium)
+                .font(isData ? FT.data(13, weight: .medium) : FontFamily.bodyText(13, weight: .medium))
         }
-        .font(FT.data())
     }
 
     // MARK: - 逻辑

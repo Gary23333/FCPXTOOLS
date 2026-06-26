@@ -71,29 +71,30 @@ final class DestinationManagerViewModel: ObservableObject {
         statusText = "扫描中…"
 
         let folderURL = destinationsURL
-        Task.detached(priority: .userInitiated) {
-            let fm = FileManager.default
-            var items: [DestinationItem] = []
-            if let entries = try? fm.contentsOfDirectory(
-                at: folderURL,
-                includingPropertiesForKeys: [.contentModificationDateKey],
-                options: [.skipsHiddenFiles]
-            ) {
-                for url in entries where !url.hasDirectoryPath {
-                    if let item = DestinationItem.from(url: url) {
-                        items.append(item)
+        Task {
+            let items = await Task.detached(priority: .userInitiated) { () -> [DestinationItem] in
+                let fm = FileManager.default
+                var items: [DestinationItem] = []
+                if let entries = try? fm.contentsOfDirectory(
+                    at: folderURL,
+                    includingPropertiesForKeys: [.contentModificationDateKey],
+                    options: [.skipsHiddenFiles]
+                ) {
+                    for url in entries where !url.hasDirectoryPath {
+                        if let item = DestinationItem.from(url: url) {
+                            items.append(item)
+                        }
                     }
+                    items.sort { ($0.modifiedAt ?? .distantPast) > ($1.modifiedAt ?? .distantPast) }
                 }
-                items.sort { ($0.modifiedAt ?? .distantPast) > ($1.modifiedAt ?? .distantPast) }
-            }
-            await MainActor.run {
-                self.destinations = items
-                self.selectedDestinationID = items.first?.id
-                self.scanning = false
-                self.statusText = items.isEmpty
-                    ? "未发现输出目标"
-                    : "共发现 \(items.count) 个输出目标"
-            }
+                return items
+            }.value
+            self.destinations = items
+            self.selectedDestinationID = items.first?.id
+            self.scanning = false
+            self.statusText = items.isEmpty
+                ? "未发现输出目标"
+                : "共发现 \(items.count) 个输出目标"
         }
     }
 
@@ -332,11 +333,11 @@ struct DestinationManagerView: View {
         Card {
             HStack(spacing: Spacing.xs) {
                 Image(systemName: systemImage)
-                    .font(FT.title())
+                    .font(.system(size: 20, weight: .bold))
                     .foregroundStyle(color.opacity(0.8))
                 VStack(alignment: .leading, spacing: Spacing.xxxs) {
                     Text(title)
-                        .font(FT.label())
+                        .font(FontFamily.caption())
                         .foregroundStyle(Theme.textSecondary)
                     Text(value)
                         .font(FT.metric())
@@ -369,7 +370,7 @@ struct DestinationManagerView: View {
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 HStack {
                     Text("输出目标列表")
-                        .font(FT.data(15, weight: .semibold))
+                        .font(FontFamily.heading(15))
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Text("\(model.destinations.count) 项")
@@ -400,13 +401,13 @@ struct DestinationManagerView: View {
     private func destinationRow(_ item: DestinationItem) -> some View {
         HStack(spacing: Spacing.sm) {
             Image(systemName: item.type.systemImage)
-                .font(FT.data(18, weight: .semibold))
+                .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(Theme.accent)
                 .frame(width: 24)
             VStack(alignment: .leading, spacing: Spacing.xxxs) {
                 HStack(spacing: Spacing.xxxs) {
                     Text(item.name)
-                        .font(FT.data(13, weight: .medium))
+                        .font(FontFamily.bodyText(13, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                         .truncationMode(.middle)
@@ -440,7 +441,7 @@ struct DestinationManagerView: View {
             Spacer()
             ProgressView().controlSize(.large)
             Text(model.statusText)
-                .font(FT.label())
+                .font(FontFamily.caption(12))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
         }
@@ -451,17 +452,18 @@ struct DestinationManagerView: View {
         VStack(spacing: Spacing.xxs) {
             Spacer()
             Image(systemName: "square.and.arrow.up.on.square")
-                .font(FT.metric())
+                .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(Theme.textSecondary)
             Text("未发现输出目标")
+                .font(FontFamily.bodyText())
                 .foregroundStyle(Theme.textSecondary)
             Text(model.statusText)
-                .font(FT.label())
+                .font(FontFamily.caption(12))
                 .foregroundStyle(Theme.textSecondary)
             Button("打开目录") { model.openDestinationsFolder() }
                 .buttonStyle(.plain)
                 .foregroundStyle(Theme.accent)
-                .font(FT.label(12, weight: .semibold))
+                .font(FontFamily.caption(12, weight: .semibold))
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -478,10 +480,10 @@ struct DestinationManagerView: View {
                     VStack(spacing: Spacing.xxxs) {
                         Spacer()
                         Text("未选择输出目标")
-                            .font(FT.data(18, weight: .semibold))
+                            .font(FontFamily.heading(18))
                             .foregroundStyle(Theme.textPrimary)
                         Text("在左侧列表选择一项查看详情")
-                            .font(FT.label())
+                            .font(FontFamily.caption())
                             .foregroundStyle(Theme.textSecondary)
                         Spacer()
                     }
@@ -496,12 +498,12 @@ struct DestinationManagerView: View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack(spacing: Spacing.sm) {
                 Image(systemName: item.type.systemImage)
-                    .font(FT.metric())
+                    .font(.system(size: 28, weight: .bold))
                     .foregroundStyle(Theme.accent)
                 VStack(alignment: .leading, spacing: Spacing.xxxs) {
                     HStack(spacing: Spacing.xxxs) {
                         Text(item.name)
-                            .font(FT.data(18, weight: .semibold))
+                            .font(FontFamily.heading(18))
                             .foregroundStyle(Theme.textPrimary)
                         if item.isDefault {
                             NeoBadge(text: "默认", style: .accent)
@@ -569,7 +571,7 @@ struct DestinationManagerView: View {
     private func infoRow(title: String, value: String, isPath: Bool = false) -> some View {
         HStack(alignment: .top, spacing: Spacing.sm) {
             Text(title)
-                .font(FT.label())
+                .font(FontFamily.caption())
                 .foregroundStyle(Theme.textSecondary)
                 .frame(width: 64, alignment: .leading)
             Text(value)
@@ -588,13 +590,14 @@ struct DestinationManagerView: View {
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 HStack {
                     Image(systemName: "plus.square.dashed")
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Theme.accent)
                     Text("新建输出目标")
-                        .font(FT.data(15, weight: .semibold))
+                        .font(FontFamily.heading(15))
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Text("从预设模板创建")
-                        .font(FT.label(11))
+                        .font(FontFamily.caption(11))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 LazyVGrid(columns: presetColumns, spacing: Spacing.sm) {
@@ -613,22 +616,22 @@ struct DestinationManagerView: View {
         } label: {
             HStack(spacing: Spacing.sm) {
                 Image(systemName: preset.type.systemImage)
-                    .font(FT.data(18, weight: .semibold))
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Theme.accent)
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: Spacing.xxxs) {
                     Text(preset.name)
-                        .font(FT.data(12, weight: .medium))
+                        .font(FontFamily.bodyText(12, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     Text(preset.description)
-                        .font(FT.label(10))
+                        .font(FontFamily.caption(10))
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(1)
                 }
                 Spacer()
                 Image(systemName: "plus.circle")
-                    .font(FT.data())
+                    .font(.system(size: 13))
                     .foregroundStyle(Theme.textSecondary)
             }
             .padding(.horizontal, Spacing.sm)
@@ -651,7 +654,7 @@ struct DestinationManagerView: View {
                     .controlSize(.small)
             }
             Text(model.statusText)
-                .font(FT.label())
+                .font(FontFamily.caption(12))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
         }

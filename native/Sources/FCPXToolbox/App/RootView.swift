@@ -62,7 +62,7 @@ struct RootView: View {
                 get: { appState.selectedSection },
                 set: { appState.selectedSection = $0 }
             ))
-            .frame(width: 200)
+            .frame(width: 230)
             .overlay(
                 Rectangle()
                     .stroke(Theme.border, lineWidth: ShapeToken.borderWidth)
@@ -127,12 +127,15 @@ struct RootView: View {
                     .fill(processModel.isRunning ? Theme.safe : Theme.textSecondary)
                     .frame(width: 6, height: 6)
                 Text(processModel.isRunning ? "FCPX 运行中" : "FCPX 未运行")
-                    .font(FT.label(11))
+                    .font(FontFamily.caption(12))
                     .foregroundStyle(Theme.textPrimary)
 
                 if processModel.isRunning {
-                    Text("· MEM: \(DisplayFormat.byteString(processModel.residentBytes))")
-                        .font(FT.label(10))
+                    Text("· MEM: ")
+                        .font(FontFamily.caption(12))
+                        .foregroundStyle(Theme.textSecondary)
+                    + Text(DisplayFormat.byteString(processModel.residentBytes))
+                        .font(FT.label(11))
                         .foregroundStyle(Theme.textSecondary)
                 }
             }
@@ -153,8 +156,11 @@ struct RootView: View {
 
             Spacer()
 
-            Text("FCPX TOOLBOX \(AppInfo.displayVersion)")
-                .font(FT.label(10))
+            Text("FCPX TOOLBOX ")
+                .font(FontFamily.caption(12))
+                .foregroundStyle(Theme.textMuted)
+            + Text(AppInfo.displayVersion)
+                .font(FT.label(11))
                 .foregroundStyle(Theme.textMuted)
         }
         .padding(.horizontal, Spacing.sm)

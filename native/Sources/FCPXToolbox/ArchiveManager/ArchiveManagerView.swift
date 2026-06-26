@@ -36,7 +36,8 @@ final class ArchiveManagerViewModel: ObservableObject {
     private let fm = FileManager.default
 
     /// 媒体文件扩展名，用于识别媒体文件夹。
-    private static let mediaExtensions: Set<String> = [
+    /// 该集合为只读值类型，无需 MainActor 隔离即可在后台线程读取。
+    private nonisolated static let mediaExtensions: Set<String> = [
         "mov", "mp4", "m4v", "avi", "r3d", "braw", "mts", "m2ts",
         "wmv", "flv", "mkv", "m4a", "wav", "aif", "aiff", "caf"
     ]
@@ -299,12 +300,13 @@ final class ArchiveManagerViewModel: ObservableObject {
                         fileCount: target.fileCount
                     )
                     newRecords.append(record)
-                    completed += 1
+                    let currentCompleted = completed + 1
+                    completed = currentCompleted
 
-                    let progress = Double(completed) / Double(total)
+                    let progress = Double(currentCompleted) / Double(total)
                     Task { @MainActor in
                         self.progressValue = progress
-                        self.statusText = "归档 \(completed)/\(total) · \(target.name)"
+                        self.statusText = "归档 \(currentCompleted)/\(total) · \(target.name)"
                         if let idx = self.items.firstIndex(where: { $0.id == target.id }) {
                             self.items[idx].status = .archived
                             self.items[idx].archivePath = dest.path
@@ -320,17 +322,19 @@ final class ArchiveManagerViewModel: ObservableObject {
                 }
             }
 
+            let finalRecords = newRecords
+            let finalFailedItems = failedItems
+            let finalBytes = finalRecords.reduce(0) { $0 + $1.totalBytes }
             await MainActor.run {
-                self.archiveRecords.insert(contentsOf: newRecords, at: 0)
+                self.archiveRecords.insert(contentsOf: finalRecords, at: 0)
                 self.selectedIDs.removeAll()
                 self.saveHistory()
                 self.phase = .ready
                 self.progressValue = 1
-                if failedItems.isEmpty {
-                    let bytes = newRecords.reduce(0) { $0 + $1.totalBytes }
-                    self.statusText = "归档完成，共 \(newRecords.count) 项，合计 \(DisplayFormat.byteString(bytes))"
+                if finalFailedItems.isEmpty {
+                    self.statusText = "归档完成，共 \(finalRecords.count) 项，合计 \(DisplayFormat.byteString(finalBytes))"
                 } else {
-                    self.statusText = "归档完成 \(newRecords.count) 项，失败 \(failedItems.count) 项：\(failedItems.joined(separator: "、"))"
+                    self.statusText = "归档完成 \(finalRecords.count) 项，失败 \(finalFailedItems.count) 项：\(finalFailedItems.joined(separator: "、"))"
                 }
             }
         }
@@ -464,15 +468,15 @@ struct ArchiveManagerView: View {
                 model.scan()
             }
         }
-        .onChange(of: appState.globalProjectDir) { newDir in
-            if let newDir = newDir, model.sourceURL != newDir {
+        .onChange(of: appState.globalProjectDir) {
+            if let newDir = appState.globalProjectDir, model.sourceURL != newDir {
                 model.sourceURL = newDir
                 model.scan()
             }
         }
-        .onChange(of: model.sourceURL) { newSource in
-            if newSource != appState.globalProjectDir {
-                appState.globalProjectDir = newSource
+        .onChange(of: model.sourceURL) {
+            if model.sourceURL != appState.globalProjectDir {
+                appState.globalProjectDir = model.sourceURL
             }
         }
         .confirmationDialog("确认归档所选素材？", isPresented: $showArchiveConfirm, titleVisibility: .visible) {
@@ -545,7 +549,7 @@ struct ArchiveManagerView: View {
         Card {
             VStack(alignment: .leading, spacing: Spacing.xxxs) {
                 Text(title)
-                    .font(FT.label(12))
+                    .font(FontFamily.caption(12))
                     .foregroundStyle(Theme.textSecondary)
                 Text(value)
                     .font(FT.metric(24))
@@ -577,18 +581,18 @@ struct ArchiveManagerView: View {
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 HStack {
                     Text("可归档素材")
-                        .font(FT.data(15, weight: .semibold))
+                        .font(FontFamily.heading(15))
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     if !model.items.isEmpty {
                         Button("全选") { model.selectAll() }
                             .buttonStyle(.plain)
-                            .font(FT.data(11))
+                            .font(FontFamily.caption(11))
                             .foregroundStyle(Theme.accent)
                             .disabled(model.isBusy)
                         Button("清除") { model.selectNone() }
                             .buttonStyle(.plain)
-                            .font(FT.data(11))
+                            .font(FontFamily.caption(11))
                             .foregroundStyle(Theme.accent)
                             .disabled(model.isBusy)
                     }
@@ -617,12 +621,13 @@ struct ArchiveManagerView: View {
         VStack(spacing: Spacing.xxs) {
             Spacer()
             Image(systemName: "archivebox")
-                .font(FT.metric())
+                .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(Theme.textSecondary)
             Text("选择源目录并扫描")
+                .font(FontFamily.bodyText(14))
                 .foregroundStyle(Theme.textSecondary)
             Text("扫描后将列出可归档的 .fcpbundle 和媒体文件夹。")
-                .font(FT.data(12))
+                .font(FontFamily.caption(12))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
         }
@@ -642,12 +647,12 @@ struct ArchiveManagerView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.name)
-                    .font(FT.data(13, weight: .medium))
+                    .font(FontFamily.bodyText(13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                 Text("\(DisplayFormat.dateString(item.modifiedAt)) · \(item.fileCount) 个文件")
-                    .font(FT.data(11))
+                    .font(FontFamily.caption(11))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
@@ -695,10 +700,10 @@ struct ArchiveManagerView: View {
                     VStack(spacing: Spacing.xxxs) {
                         Spacer()
                         Text("未选择素材")
-                            .font(FT.data(18, weight: .semibold))
+                            .font(FontFamily.heading(18))
                             .foregroundStyle(Theme.textPrimary)
                         Text("选择左侧列表中的素材查看详情")
-                            .font(FT.data(12))
+                            .font(FontFamily.caption(12))
                             .foregroundStyle(Theme.textSecondary)
                         Spacer()
                     }
@@ -714,7 +719,7 @@ struct ArchiveManagerView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(item.name)
-                        .font(FT.data(18, weight: .semibold))
+                        .font(FontFamily.heading(18))
                         .foregroundStyle(Theme.textPrimary)
                     Text(item.url.path)
                         .font(FT.data(12))
@@ -730,7 +735,7 @@ struct ArchiveManagerView: View {
                     Label("在 Finder 显示", systemImage: "folder")
                 }
                 .buttonStyle(.plain)
-                .font(FT.data(12))
+                .font(FontFamily.bodyText(12))
                 .foregroundStyle(Theme.accent)
             }
 
@@ -744,7 +749,7 @@ struct ArchiveManagerView: View {
                 Divider()
                 VStack(alignment: .leading, spacing: 3) {
                     Text("归档位置")
-                        .font(FT.data(11))
+                        .font(FontFamily.caption(11))
                         .foregroundStyle(Theme.textSecondary)
                     Text(archivePath)
                         .font(FT.data(12))
@@ -762,7 +767,7 @@ struct ArchiveManagerView: View {
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 HStack {
                     Text("归档历史")
-                        .font(FT.data(15, weight: .semibold))
+                        .font(FontFamily.heading(15))
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     if let record = model.selectedRecord {
@@ -772,7 +777,7 @@ struct ArchiveManagerView: View {
                             Label("恢复", systemImage: "arrow.uturn.backward")
                         }
                         .buttonStyle(.plain)
-                        .font(FT.data(12))
+                        .font(FontFamily.bodyText(12))
                         .foregroundStyle(Theme.accent)
                         .disabled(model.isBusy)
 
@@ -782,7 +787,7 @@ struct ArchiveManagerView: View {
                             Label("Finder", systemImage: "folder")
                         }
                         .buttonStyle(.plain)
-                        .font(FT.data(12))
+                        .font(FontFamily.bodyText(12))
                         .foregroundStyle(Theme.accent)
 
                         Button {
@@ -791,7 +796,7 @@ struct ArchiveManagerView: View {
                             Label("删除", systemImage: "trash")
                         }
                         .buttonStyle(.plain)
-                        .font(FT.data(12))
+                        .font(FontFamily.bodyText(12))
                         .foregroundStyle(Theme.danger)
                         .disabled(model.isBusy)
                     }
@@ -801,10 +806,10 @@ struct ArchiveManagerView: View {
                     VStack(spacing: Spacing.xxxs) {
                         Spacer()
                         Image(systemName: "clock.arrow.circlepath")
-                            .font(FT.metric())
+                            .font(.system(size: 28, weight: .bold))
                             .foregroundStyle(Theme.textSecondary)
                         Text("暂无归档记录")
-                            .font(FT.data(12))
+                            .font(FontFamily.bodyText(14))
                             .foregroundStyle(Theme.textSecondary)
                         Spacer()
                     }
@@ -830,12 +835,12 @@ struct ArchiveManagerView: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(record.originalName)
-                    .font(FT.data(13, weight: .medium))
+                    .font(FontFamily.bodyText(13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                 Text("\(DisplayFormat.dateString(record.archivedAt)) · \(record.fileCount) 个文件")
-                    .font(FT.data(11))
+                    .font(FontFamily.caption(11))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
@@ -857,7 +862,7 @@ struct ArchiveManagerView: View {
     private func statPair(_ title: String, _ value: String, _ color: Color) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(FT.label(11))
+                .font(FontFamily.caption(11))
                 .foregroundStyle(Theme.textSecondary)
             Text(value)
                 .font(FT.data(16, weight: .semibold))
@@ -872,7 +877,7 @@ struct ArchiveManagerView: View {
             NeoProgress(value: model.progressValue)
             HStack {
                 Text(model.statusText)
-                    .font(FT.data(12))
+                    .font(FontFamily.caption(12))
                     .foregroundStyle(Theme.textSecondary)
                 Spacer()
                 if model.canArchive {

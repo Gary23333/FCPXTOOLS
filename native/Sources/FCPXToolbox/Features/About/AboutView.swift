@@ -14,7 +14,7 @@ struct AboutView: View {
         VStack(spacing: Spacing.xl) {
             // App Logo
             Image(systemName: "sparkles")
-                .font(FT.metric())
+                .font(.system(size: 28, weight: .bold))
                 .foregroundColor(Theme.accent)
                 .frame(width: 80, height: 80)
                 .background(
@@ -27,8 +27,7 @@ struct AboutView: View {
             // App Info
             VStack(spacing: Spacing.sm) {
                 Text("FCPX 工具箱")
-                    .font(FT.metric())
-                    .fontWeight(.bold)
+                    .font(FontFamily.heading(24))
                     .foregroundColor(Theme.textPrimary)
 
                 Text("Version \(appVersion) (Build \(buildNumber))")
@@ -38,7 +37,7 @@ struct AboutView: View {
 
             // Description
             Text("为 Final Cut Pro 用户准备的 macOS 原生工具箱。\n安全清理、高效归档、智能字幕与输出管理，一站式后期工作流辅助。")
-                .font(FT.data())
+                .font(FontFamily.bodyText(14))
                 .multilineTextAlignment(.center)
                 .foregroundColor(Theme.textPrimary)
                 .padding(.horizontal, Spacing.lg)
@@ -53,10 +52,10 @@ struct AboutView: View {
                     Link("提报问题", destination: URL(string: "https://github.com/Gary23333/FCPXTOOLS/issues")!)
                     Link("许可协议", destination: URL(string: "https://opensource.org/licenses/MIT")!)
                 }
-                .font(FT.data())
+                .font(FontFamily.bodyText(14))
 
                 Text("Copyright © 2026 Gary. All rights reserved.")
-                    .font(FT.label())
+                    .font(FontFamily.caption(12))
                     .foregroundColor(Theme.textSecondary)
                     .padding(.top, Spacing.sm)
             }

@@ -16,10 +16,10 @@ struct NeoSidebar: View {
             // Brand
             HStack(spacing: Spacing.xxxs) {
                 Text("FCPX")
-                    .font(FT.brand(14, weight: .bold))
+                    .font(FontFamily.heading(16, weight: .bold))
                     .foregroundStyle(Theme.accent)
                 Text("TOOLBOX")
-                    .font(FT.label(10, weight: .bold))
+                    .font(FontFamily.caption(11, weight: .bold))
                     .foregroundStyle(Theme.textSecondary)
             }
             .padding(.horizontal, Spacing.sm)
@@ -27,7 +27,7 @@ struct NeoSidebar: View {
             .padding(.bottom, Spacing.xs)
 
             Divider()
-                .overlay(Color.white.opacity(0.3))
+                .overlay(Color.white.opacity(0.25))
 
             // Navigation
             ScrollView(showsIndicators: false) {
@@ -35,7 +35,7 @@ struct NeoSidebar: View {
                     ForEach(groupedSections, id: \.0) { group, sections in
                         VStack(alignment: .leading, spacing: Spacing.xxxs) {
                             Text(group.uppercased())
-                                .font(FT.label(9))
+                                .font(FontFamily.caption(11, weight: .semibold))
                                 .foregroundStyle(Theme.textMuted)
                                 .padding(.horizontal, Spacing.sm)
                                 .padding(.top, Spacing.xxxs)
@@ -57,7 +57,7 @@ struct NeoSidebar: View {
             // Version
             HStack {
                 Text(AppInfo.displayVersion)
-                    .font(FT.label(9))
+                    .font(FontFamily.caption(10, weight: .medium))
                     .foregroundStyle(Theme.textMuted)
             }
             .padding(.horizontal, Spacing.sm)
@@ -77,18 +77,18 @@ struct NeoSidebar: View {
                     .frame(width: 6, height: 6)
 
                 Image(systemName: item.systemImage)
-                    .font(.system(size: 13))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(selection == item ? Theme.accent : Theme.textSecondary)
-                    .frame(width: 18)
+                    .frame(width: 20)
 
                 Text(item.rawValue)
-                    .font(FT.data(13, weight: selection == item ? .medium : .regular))
+                    .font(FontFamily.bodyText(13, weight: selection == item ? .medium : .regular))
                     .foregroundStyle(selection == item ? Theme.textPrimary : Theme.textSecondary)
 
                 Spacer()
             }
             .padding(.horizontal, Spacing.xs)
-            .padding(.vertical, 6)
+            .padding(.vertical, 7)
             .background(selection == item ? Theme.sidebarAccent : Color.clear)
         }
         .buttonStyle(.plain)

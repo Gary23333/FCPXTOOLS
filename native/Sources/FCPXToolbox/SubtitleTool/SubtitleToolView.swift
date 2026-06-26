@@ -497,7 +497,7 @@ struct SubtitleToolView: View {
                     .font(.system(size: 9, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary)
             }
-            .font(FT.label(12, weight: .medium))
+            .font(FontFamily.caption(12, weight: .medium))
             .padding(.horizontal, Spacing.sm)
             .padding(.vertical, Spacing.xxxs)
             .background(Theme.panel)
@@ -533,20 +533,20 @@ struct SubtitleToolView: View {
         Card {
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text("文件信息")
-                    .font(FT.data(15, weight: .semibold))
+                    .font(FontFamily.heading(15, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 if let url = model.audioFileURL {
-                    infoRow("文件名", url.lastPathComponent)
-                    infoRow("时长", model.durationString)
-                    infoRow("大小", DisplayFormat.byteString(model.fileSize))
+                    infoRow("文件名", url.lastPathComponent, valueIsData: true)
+                    infoRow("时长", model.durationString, valueIsData: true)
+                    infoRow("大小", DisplayFormat.byteString(model.fileSize), valueIsData: true)
                     infoRow("语言", model.selectedLanguage.displayName)
                 } else {
                     HStack(spacing: Spacing.xxs) {
                         Image(systemName: "waveform")
-                            .font(FT.metric())
+                            .font(.system(size: 28, weight: .bold))
                             .foregroundStyle(Theme.textSecondary)
                         Text("尚未选择文件")
-                            .font(FT.label())
+                            .font(FontFamily.caption(12, weight: .medium))
                             .foregroundStyle(Theme.textSecondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -558,14 +558,14 @@ struct SubtitleToolView: View {
         }
     }
 
-    private func infoRow(_ title: String, _ value: String) -> some View {
+    private func infoRow(_ title: String, _ value: String, valueIsData: Bool = false) -> some View {
         HStack {
             Text(title)
-                .font(FT.label())
+                .font(FontFamily.caption(12, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
             Text(value)
-                .font(FT.label(12, weight: .medium))
+                .font(valueIsData ? FT.data(12, weight: .medium) : FontFamily.bodyText(12, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
                 .truncationMode(.middle)
@@ -576,7 +576,7 @@ struct SubtitleToolView: View {
         Card {
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text("操作")
-                    .font(FT.data(15, weight: .semibold))
+                    .font(FontFamily.heading(15, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 NeoButton(
                     title: "开始转录",
@@ -629,11 +629,11 @@ struct SubtitleToolView: View {
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 HStack {
                     Text("字幕条目")
-                        .font(FT.data(15, weight: .semibold))
+                        .font(FontFamily.heading(15, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Text("共 \(model.entries.count) 条")
-                        .font(FT.label(11))
+                        .font(FontFamily.caption(12))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 if model.entries.isEmpty {
@@ -657,12 +657,12 @@ struct SubtitleToolView: View {
         VStack(spacing: Spacing.xxs) {
             Spacer()
             Image(systemName: "captions.bubble")
-                .font(FT.metric())
+                .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(Theme.textSecondary)
             Text("暂无字幕")
                 .foregroundStyle(Theme.textSecondary)
             Text("选择文件后点击「开始转录」，或导入现有 SRT 文件")
-                .font(FT.label())
+                .font(FontFamily.caption(12))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
         }
@@ -693,7 +693,7 @@ struct SubtitleToolView: View {
                     model.addEntry(after: entry)
                 } label: {
                     Image(systemName: "plus.circle")
-                        .font(FT.label())
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(Theme.accent)
                 }
                 .buttonStyle(.plain)
@@ -701,13 +701,13 @@ struct SubtitleToolView: View {
                     model.deleteEntry(entry)
                 } label: {
                     Image(systemName: "trash")
-                        .font(FT.label())
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(Theme.danger)
                 }
                 .buttonStyle(.plain)
             }
             TextEditor(text: textBinding)
-                .font(FT.data())
+                .font(FontFamily.bodyText(13))
                 .foregroundStyle(Theme.textPrimary)
                 .scrollContentBackground(.hidden)
                 .background(Theme.background)
@@ -736,11 +736,11 @@ struct SubtitleToolView: View {
             NeoProgress(value: model.progressValue)
             HStack {
                 Text(model.statusText)
-                    .font(FT.label())
+                    .font(FontFamily.caption(12))
                     .foregroundStyle(Theme.textSecondary)
                 Spacer()
                 Text(model.status.rawValue)
-                    .font(FT.label(12, weight: .medium))
+                    .font(FT.data(12, weight: .medium))
                     .foregroundStyle(statusColor)
             }
         }

@@ -17,7 +17,7 @@ struct NeoInput: View {
             }
 
             TextField(placeholder, text: $text)
-                .font(FT.data(13))
+                .font(FontFamily.bodyText(14))
                 .foregroundStyle(Theme.textPrimary)
                 .textFieldStyle(.plain)
 
@@ -33,7 +33,7 @@ struct NeoInput: View {
             }
         }
         .padding(.horizontal, Spacing.xxs)
-        .padding(.vertical, 6)
+        .padding(.vertical, 8)
         .background(Theme.panel)
         .overlay(
             Rectangle()

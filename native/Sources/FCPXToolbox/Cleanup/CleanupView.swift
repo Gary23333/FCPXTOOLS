@@ -22,15 +22,15 @@ struct CleanupView: View {
                 model.rescan()
             }
         }
-        .onChange(of: appState.globalProjectDir) { newDir in
-            if let newDir = newDir, model.rootURL != newDir {
+        .onChange(of: appState.globalProjectDir) {
+            if let newDir = appState.globalProjectDir, model.rootURL != newDir {
                 model.rootURL = newDir
                 model.rescan()
             }
         }
-        .onChange(of: model.rootURL) { newRoot in
-            if newRoot != appState.globalProjectDir {
-                appState.globalProjectDir = newRoot
+        .onChange(of: model.rootURL) {
+            if model.rootURL != appState.globalProjectDir {
+                appState.globalProjectDir = model.rootURL
             }
         }
         .confirmationDialog("确认清理所选缓存？", isPresented: $showCleanConfirm, titleVisibility: .visible) {
@@ -98,7 +98,7 @@ struct CleanupView: View {
         Card {
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(title)
-                    .font(FT.label())
+                    .font(FontFamily.caption(11))
                     .foregroundStyle(Theme.textSecondary)
                 Text(value)
                     .font(FT.metric())
@@ -129,7 +129,7 @@ struct CleanupView: View {
         Card {
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text("资源库 / 项目")
-                    .font(FT.data(15, weight: .semibold))
+                    .font(FontFamily.heading(16, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 if model.projects.isEmpty {
                     emptyHint
@@ -164,12 +164,13 @@ struct CleanupView: View {
         VStack(spacing: Spacing.xxs) {
             Spacer()
             Image(systemName: "folder.badge.questionmark")
-                .font(FT.metric())
+                .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(Theme.textSecondary)
             Text("选择 Final Cut Pro 资源库所在目录")
+                .font(FontFamily.bodyText(13))
                 .foregroundStyle(Theme.textSecondary)
             Text("扫描后可查看每个资源库的总占用和可清理缓存。")
-                .font(FT.label())
+                .font(FontFamily.caption(11))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
         }
@@ -189,7 +190,7 @@ struct CleanupView: View {
 
             VStack(alignment: .leading, spacing: Spacing.xxxs) {
                 Text(project.name)
-                    .font(FT.data(13, weight: .medium))
+                    .font(FontFamily.bodyText(13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -218,10 +219,10 @@ struct CleanupView: View {
                 } else {
                     VStack(spacing: Spacing.xxs) {
                         Spacer()
-                        Text("未选择项目").font(FT.title(18, weight: .semibold))
+                        Text("未选择项目").font(FontFamily.heading(18, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                         Text("扫描后选择一个资源库查看详情")
-                            .font(FT.label()).foregroundStyle(Theme.textSecondary)
+                            .font(FontFamily.caption(11)).foregroundStyle(Theme.textSecondary)
                         Spacer()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -235,7 +236,7 @@ struct CleanupView: View {
         VStack(alignment: .leading, spacing: Spacing.xxs) {
             HStack {
                 VStack(alignment: .leading, spacing: Spacing.xxxs) {
-                    Text(project.name).font(FT.title(18, weight: .semibold))
+                    Text(project.name).font(FontFamily.heading(18, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Text("\(project.kind.rawValue) · \(project.url.path)")
                         .font(FT.label()).foregroundStyle(Theme.textSecondary)
@@ -255,7 +256,7 @@ struct CleanupView: View {
             }
 
             Divider()
-            Text("可清理项").font(FT.data(14, weight: .semibold))
+            Text("可清理项").font(FontFamily.heading(16, weight: .semibold))
                 .foregroundStyle(Theme.textPrimary)
 
             ScrollView {
@@ -272,7 +273,7 @@ struct CleanupView: View {
 
     private func statPair(_ title: String, _ value: String, _ color: Color) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xxxs) {
-            Text(title).font(FT.data(11)).foregroundStyle(Theme.textSecondary)
+            Text(title).font(FontFamily.caption(11)).foregroundStyle(Theme.textSecondary)
             Text(value).font(FT.data(16, weight: .semibold)).foregroundStyle(color)
         }
     }
@@ -290,7 +291,7 @@ struct CleanupView: View {
 
             VStack(alignment: .leading, spacing: Spacing.xxxs) {
                 HStack(spacing: Spacing.xxxs) {
-                    Text(group.title).font(FT.data(13, weight: .medium))
+                    Text(group.title).font(FontFamily.bodyText(13, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                     NeoBadge(
                         text: group.risk.rawValue,
@@ -298,7 +299,7 @@ struct CleanupView: View {
                     )
                 }
                 Text(group.explanation)
-                    .font(FT.data(11)).foregroundStyle(Theme.textSecondary)
+                    .font(FontFamily.caption(11)).foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
@@ -320,10 +321,10 @@ struct CleanupView: View {
             NeoProgress(value: model.progressValue)
             HStack {
                 Text(model.statusText)
-                    .font(FT.label()).foregroundStyle(Theme.textSecondary)
+                    .font(FontFamily.caption(11)).foregroundStyle(Theme.textSecondary)
                 Spacer()
                 Text(model.progressText)
-                    .font(FT.label()).foregroundStyle(Theme.textSecondary)
+                    .font(FT.label(11)).foregroundStyle(Theme.textSecondary)
             }
         }
     }

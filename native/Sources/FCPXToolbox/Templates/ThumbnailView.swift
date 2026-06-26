@@ -57,6 +57,7 @@ struct ThumbnailView: View {
                     Rectangle().fill(Theme.border.opacity(0.4))
                 }
                 Image(systemName: "photo")
+                    .font(.system(size: 28, weight: .regular))
                     .foregroundStyle(Theme.textSecondary)
             }
         }

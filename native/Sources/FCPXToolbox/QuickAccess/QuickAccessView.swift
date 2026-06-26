@@ -138,7 +138,7 @@ struct QuickAccessView: View {
         return Card {
             HStack(alignment: .top, spacing: Spacing.xxs) {
                 Image(systemName: entry.icon)
-                    .font(FT.title(22))
+                    .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(exists ? Theme.accent : Theme.textSecondary)
                     .frame(width: 36, height: 36)
                     .background(exists ? Theme.accent.opacity(0.1) : Theme.background)
@@ -147,20 +147,20 @@ struct QuickAccessView: View {
                 VStack(alignment: .leading, spacing: Spacing.xxxs) {
                     HStack(spacing: Spacing.xxxs) {
                         Text(entry.name)
-                            .font(FT.data(14))
+                            .font(FontFamily.bodyText(14, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
                         if !exists {
                             NeoBadge(text: "不存在", style: .neutral)
                         }
                     }
                     Text(entry.path)
-                        .font(FT.label(11))
+                        .font(FT.data(12))
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(2)
                         .truncationMode(.middle)
                     if let highlight = entry.highlightFile {
                         Text("高亮：\(highlight)")
-                            .font(FT.label(10))
+                            .font(FT.data(11))
                             .foregroundStyle(Theme.textSecondary)
                     }
                 }

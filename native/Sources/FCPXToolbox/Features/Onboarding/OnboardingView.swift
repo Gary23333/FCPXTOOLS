@@ -66,17 +66,17 @@ struct OnboardingView: View {
     private var stepWelcome: some View {
         VStack(spacing: Spacing.xl) {
             Image(systemName: "sparkles")
-                .font(FT.metric())
+                .font(.system(size: 28, weight: .bold))
                 .foregroundColor(Theme.accent)
                 .padding(.top, Spacing.xl)
 
             VStack(spacing: Spacing.sm) {
                 Text("欢迎使用 FCPX 工具箱")
-                    .font(FT.title())
+                    .font(FontFamily.heading(22))
                     .foregroundColor(Theme.textPrimary)
 
                 Text("专为 Final Cut Pro 设计的原生 macOS 生产力管家")
-                    .font(FT.data())
+                    .font(FontFamily.bodyText(14))
                     .foregroundColor(Theme.textSecondary)
             }
 
@@ -99,17 +99,17 @@ struct OnboardingView: View {
     private var stepSecurity: some View {
         VStack(spacing: Spacing.xl) {
             Image(systemName: "shield.checkerboard")
-                .font(FT.metric())
+                .font(.system(size: 28, weight: .bold))
                 .foregroundColor(Theme.safe)
                 .padding(.top, Spacing.xl)
 
             VStack(spacing: Spacing.sm) {
                 Text("数据安全是我们的生命线")
-                    .font(FT.title())
+                    .font(FontFamily.heading(22))
                     .foregroundColor(Theme.textPrimary)
 
                 Text("尊重用户隐私与每一位后期工作者的珍贵素材")
-                    .font(FT.data())
+                    .font(FontFamily.bodyText(14))
                     .foregroundColor(Theme.textSecondary)
             }
 
@@ -131,17 +131,17 @@ struct OnboardingView: View {
     private var stepFDA: some View {
         VStack(spacing: Spacing.xl) {
             Image(systemName: "lock.shield.fill")
-                .font(FT.metric())
+                .font(.system(size: 28, weight: .bold))
                 .foregroundColor(Theme.warning)
                 .padding(.top, Spacing.sm)
 
             VStack(spacing: Spacing.sm) {
                 Text("授权完全磁盘访问权限")
-                    .font(FT.title())
+                    .font(FontFamily.heading(22))
                     .foregroundColor(Theme.textPrimary)
 
                 Text("由于 macOS 安全隔离机制，清理与管理外置素材磁盘需要此权限")
-                    .font(FT.data())
+                    .font(FontFamily.bodyText(14))
                     .foregroundColor(Theme.textSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, Spacing.xl)
@@ -150,8 +150,7 @@ struct OnboardingView: View {
             // 步骤引导
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 Text("如何授权？")
-                    .font(FT.data())
-                    .fontWeight(.bold)
+                    .font(FontFamily.bodyText(14, weight: .semibold))
                     .foregroundColor(Theme.textPrimary)
 
                 stepItem(num: "1", text: "点击下方「打开隐私设置」按钮。")
@@ -176,17 +175,16 @@ struct OnboardingView: View {
     private func featureRow(icon: String, title: String, desc: String) -> some View {
         HStack(alignment: .top, spacing: Spacing.md) {
             Image(systemName: icon)
-                .font(FT.data())
+                .font(.system(size: 16, weight: .regular))
                 .foregroundColor(Theme.accent)
                 .frame(width: 24, height: 24)
 
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(title)
-                    .font(FT.data())
-                    .fontWeight(.bold)
+                    .font(FontFamily.bodyText(14, weight: .semibold))
                     .foregroundColor(Theme.textPrimary)
                 Text(desc)
-                    .font(FT.label())
+                    .font(FontFamily.caption(12))
                     .foregroundColor(Theme.textSecondary)
             }
         }
@@ -197,14 +195,13 @@ struct OnboardingView: View {
             HStack(spacing: Spacing.sm) {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(Theme.safe)
-                    .font(FT.data())
+                    .font(.system(size: 16, weight: .regular))
                 Text(title)
-                    .font(FT.data())
-                    .fontWeight(.bold)
+                    .font(FontFamily.bodyText(14, weight: .semibold))
                     .foregroundColor(Theme.textPrimary)
             }
             Text(desc)
-                .font(FT.label())
+                .font(FontFamily.caption(12))
                 .foregroundColor(Theme.textSecondary)
                 .padding(.leading, 19)
         }
@@ -213,7 +210,7 @@ struct OnboardingView: View {
     private func stepItem(num: String, text: String) -> some View {
         HStack(alignment: .top, spacing: Spacing.sm) {
             Text(num)
-                .font(FT.label())
+                .font(FT.label(12))
                 .fontWeight(.bold)
                 .foregroundColor(.white)
                 .frame(width: 16, height: 16)
@@ -221,7 +218,7 @@ struct OnboardingView: View {
                 .padding(.top, 1)
 
             Text(text)
-                .font(FT.label())
+                .font(FontFamily.caption(12))
                 .foregroundColor(Theme.textPrimary)
         }
     }

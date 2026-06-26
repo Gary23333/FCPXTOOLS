@@ -131,14 +131,15 @@ struct ProcessManagerView: View {
             VStack(alignment: .leading, spacing: Spacing.xxxs) {
                 HStack {
                     Text("运行状态:")
+                        .font(FontFamily.caption(12))
                         .foregroundStyle(Theme.textSecondary)
                     Text(model.isRunning ? "运行中" : "未运行")
-                        .fontWeight(.bold)
+                        .font(FT.data(13, weight: .bold))
                         .foregroundStyle(model.isRunning ? Theme.safe : Theme.textSecondary)
                     Spacer()
                     if model.isRunning {
                         Text("PID: \(model.pid)")
-                            .font(FT.data())
+                            .font(FT.data(13))
                             .padding(.horizontal, Spacing.xxxs)
                             .padding(.vertical, 1)
                             .background(Theme.background)
@@ -148,18 +149,20 @@ struct ProcessManagerView: View {
                 if model.isRunning {
                     HStack {
                         Text("内存占用:")
+                            .font(FontFamily.caption(12))
                             .foregroundStyle(Theme.textSecondary)
                         Text(DisplayFormat.byteString(model.residentBytes))
-                            .fontWeight(.semibold)
+                            .font(FT.data(13, weight: .semibold))
                     }
                     HStack {
                         Text("更新时间:")
+                            .font(FontFamily.caption(12))
                             .foregroundStyle(Theme.textSecondary)
                         Text(DisplayFormat.dateString(model.lastUpdated))
+                            .font(FT.data(13))
                     }
                 }
             }
-            .font(FT.label())
 
             Divider()
 
@@ -206,7 +209,7 @@ struct ProcessManagerView: View {
             }
 
             Text(model.statusMessage)
-                .font(FT.label(10))
+                .font(FontFamily.caption(11))
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, alignment: .leading)
