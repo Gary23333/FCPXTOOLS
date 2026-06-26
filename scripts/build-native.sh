@@ -3,16 +3,16 @@ set -eu
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP_NAME="FCPX 工具箱"
-VERSION="0.4.0"
+VERSION="0.5.0"
 EXEC="FCPXToolbox"
 CONFIG="${1:-release}"
-OUT="$ROOT/dist/native-v0.4/$APP_NAME.app"
+OUT="$ROOT/dist/native-v0.5/$APP_NAME.app"
 
 # 用 Swift Package Manager 构建（替代旧的 swiftc 单目录编译）。
 ( cd "$ROOT/native" && swift build -c "$CONFIG" )
 BIN="$(cd "$ROOT/native" && swift build -c "$CONFIG" --show-bin-path)/$EXEC"
 
-mkdir -p "$ROOT/dist/native-v0.4"
+mkdir -p "$ROOT/dist/native-v0.5"
 rm -rf "$OUT"
 mkdir -p "$OUT/Contents/MacOS" "$OUT/Contents/Resources"
 

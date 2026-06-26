@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.4.0"><strong>下载 v0.4.0</strong></a> ·
+  <a href="https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.5.0"><strong>下载 v0.5.0</strong></a> ·
   <a href="./docs/index.html">产品主页</a> ·
   <a href="#功能模块">功能</a> ·
   <a href="#构建与运行">构建</a>
@@ -20,7 +20,7 @@
   <img alt="License" src="https://img.shields.io/badge/license-MIT-22C55E?style=flat-square">
   <img alt="Platform" src="https://img.shields.io/badge/macOS-14%2B-0040FF?style=flat-square">
   <img alt="Swift" src="https://img.shields.io/badge/Swift-5.9-C5C9C9?style=flat-square">
-  <img alt="Version" src="https://img.shields.io/badge/version-0.4.0-F59E0B?style=flat-square">
+  <img alt="Version" src="https://img.shields.io/badge/version-0.5.0-F59E0B?style=flat-square">
 </p>
 
 ---
@@ -42,7 +42,7 @@
 
 ## 下载与安装
 
-1. 从 [GitHub Releases](https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.4.0) 下载 `FCPXTools-0.4.0.zip`。
+1. 从 [GitHub Releases](https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.5.0) 下载 `FCPXTools-0.5.0.zip`。
 2. 解压并将 `FCPX 工具箱.app` 拖入 **应用程序** 文件夹。
 3. 首次启动如遇 Gatekeeper 提示，可在 **系统设置 > 隐私与安全性** 中选择“仍要打开”。
 
@@ -74,7 +74,7 @@ scripts/build-native.sh
 构建产物位于：
 
 ```text
-dist/native-v0.4/FCPX 工具箱.app
+dist/native-v0.5/FCPX 工具箱.app
 ```
 
 ### 打包安装包
@@ -86,7 +86,7 @@ scripts/package-local.sh
 输出：
 
 ```text
-dist/FCPXTools-0.4.0.zip
+dist/FCPXTools-0.5.0.zip
 ```
 
 ## 技术栈
