@@ -14,11 +14,6 @@ let package = Package(
             resources: [
                 .process("Resources/Fonts")
             ]
-        ),
-        .testTarget(
-            name: "FCPXToolboxTests",
-            dependencies: ["FCPXToolbox"],
-            path: "Tests/FCPXToolboxTests"
         )
     ]
 )

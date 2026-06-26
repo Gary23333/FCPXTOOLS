@@ -1,111 +1,62 @@
-# 🎬 FCPX 工具箱
+# FCPX 工具箱
 
 <p align="center">
-  <img src="assets/AppIcon.iconset/icon_512x512@2x.png" width="140" alt="FCPX 工具箱图标">
+  <img src="assets/AppIcon.iconset/icon_512x512@2x.png" width="128" alt="FCPX 工具箱图标">
 </p>
 
 <p align="center">
-  <strong>为 Final Cut Pro 用户准备的 macOS 原生工具箱。</strong><br>
-  八大功能模块，覆盖清理、模板、健康检查、归档、字幕、输出全流程。
+  <strong>为 Final Cut Pro 剪辑师打造的 macOS 原生工具箱。</strong><br>
+  10 个功能模块，从快捷打开、清理缓存、模板与插件管理，到健康检查、归档、字幕与输出，一站式覆盖剪辑工作流。
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-2ea44f"></a>
-  <img alt="Platform" src="https://img.shields.io/badge/platform-macOS%2014%2B-0a7ea4">
-  <img alt="Swift" src="https://img.shields.io/badge/Swift-5.9-f05138">
-  <img alt="Version" src="https://img.shields.io/badge/version-v0.4.0-237063">
+  <a href="https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.4.0"><strong>下载 v0.4.0</strong></a> ·
+  <a href="./docs/index.html">产品主页</a> ·
+  <a href="#功能模块">功能</a> ·
+  <a href="#构建与运行">构建</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/Gary23333/FCPXTOOLS/releases">📦 下载发布版</a> ·
-  <a href="#-快速开始">🚀 快速开始</a> ·
-  <a href="#-核心功能">🧰 核心功能</a> ·
-  <a href="#-技术栈">🧑‍💻 技术栈</a>
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-22C55E?style=flat-square">
+  <img alt="Platform" src="https://img.shields.io/badge/macOS-14%2B-0040FF?style=flat-square">
+  <img alt="Swift" src="https://img.shields.io/badge/Swift-5.9-C5C9C9?style=flat-square">
+  <img alt="Version" src="https://img.shields.io/badge/version-0.4.0-F59E0B?style=flat-square">
 </p>
 
 ---
 
-## ✨ 它能帮你做什么
-
-剪 Final Cut Pro 项目久了，资源库里很容易堆满渲染文件、波形缓存、分析缓存、代理媒体和优化媒体。`FCPX 工具箱` 从最初的清理助手出发，现已成长为覆盖 FCPX 全工作流的八合一工具箱——清理缓存、浏览模板、检查健康、归档素材、生成字幕、管理输出，一站式搞定。
-
-```mermaid
-flowchart LR
-  A["选择 FCPX 资源库或上级目录 📁"] --> B["扫描资源库与事件 🔎"]
-  B --> C["按风险展示缓存明细 🧭"]
-  C --> D["勾选要清理的项目 ✅"]
-  D --> E["移入废纸篓 ♻️"]
-  E --> F["释放磁盘空间 🚀"]
-```
-
-## 🧰 核心功能
-
-侧边栏按三大分组组织全部 8 个功能模块：
-
-### 🔧 快捷工具
-
-| 模块 | 图标 | 说明 |
-| --- | --- | --- |
-| **快捷打开** | ⚡ | 一键打开 9 个 FCPX 常用目录（影片目录、Motion 模板、偏好设置、缓存、ProApps 设置、输出目标等），支持直接启动 Final Cut Pro |
-| **进程管理** | 📊 | 实时监控 FCPX 运行状态（PID / 内存占用），支持启动 / 退出 / 强制退出，每 2 秒自动刷新 |
-
-### 📦 资源管理
-
-| 模块 | 图标 | 说明 |
-| --- | --- | --- |
-| **清理助手** | 🧹 | 扫描 `.fcpbundle` 资源库，按风险分级展示缓存，安全移至废纸篓 |
-| **模板库** | 🧩 | 浏览 Motion Templates，按效果、转场、字幕/标题、发生器、合成分类，支持搜索、筛选、分页 |
-| **健康检查** | ❤️ | 扫描资源库完整性，8 项检查（总大小 / 渲染缓存 / 原始媒体 / 代理媒体 / 优化媒体 / 缺失文件 / 磁盘空间 / 修改时间），按健康 / 警告 / 严重分级 |
-| **归档管理** | 📦 | 素材库快速归档，复制到归档目录、生成清单文件、归档历史持久化、一键恢复 |
-
-### 🎨 创作辅助
-
-| 模块 | 图标 | 说明 |
-| --- | --- | --- |
-| **快速字幕** | 💬 | 基于 macOS Speech 框架的 ASR 语音识别，自动生成 SRT 字幕文件，支持简繁中文 / 英语 / 日语 / 韩语，可导入 / 导出 / 编辑 |
-| **输出管理** | 📤 | 管理 FCPX 输出目标（Share Destinations），解析 plist 配置，支持查看 / 复制 / 删除 / 导出，内置 6 种预设模板 |
-
-### ⌨️ 键盘快捷键
-
-| 快捷键 | 功能 |
-| --- | --- |
-| `⌘1` ~ `⌘8` | 快速切换功能模块 |
-
-## 🖼️ 项目预览
+## 功能模块
 
 | 模块 | 说明 |
 | --- | --- |
-| ⚡ 快捷打开 | 一键访问 FCPX 常用目录和启动应用 |
-| 📊 进程管理 | 监控 FCPX 运行状态，启动 / 退出 / 强制退出 |
-| 🧹 清理助手 | 扫描 `.fcpbundle`、`.fcpproject` 和 FCPX 事件目录，统计可清理缓存 |
-| 🧩 模板库 | 浏览 Motion Templates 中的效果、转场、字幕/标题、发生器和合成 |
-| ❤️ 健康检查 | 检查资源库完整性，8 项健康指标，分级展示 |
-| 📦 归档管理 | 素材库快速归档与恢复，归档历史持久化 |
-| 💬 快速字幕 | ASR 语音识别生成 SRT 字幕，支持多语言 |
-| 📤 输出管理 | 管理 FCPX 输出目标，预设模板快速创建 |
+| **快捷打开** | 一键进入 FCPX 常用目录，直接启动 Final Cut Pro |
+| **清理助手** | 扫描 `.fcpbundle` 资源库，按风险分级清理渲染、波形、分析等缓存 |
+| **模板库** | 浏览 Motion Templates，按效果、转场、字幕、发生器、合成分类检索 |
+| **插件管理** | 集中管理 FCPX / Motion 插件，快速启用、禁用与定位 |
+| **色彩管理** | 查看与整理 LUT、色彩预设，辅助统一项目色彩工作流 |
+| **快捷键管理** | 浏览、备份与恢复 FCPX 快捷键命令集 |
+| **健康检查** | 8 项指标扫描资源库完整性，按健康 / 警告 / 严重分级 |
+| **归档管理** | 素材库快速归档、生成清单、持久化历史、一键恢复 |
+| **快速字幕** | 基于 macOS Speech 框架的 ASR 语音识别，自动生成 SRT 字幕 |
+| **输出管理** | 管理 FCPX 输出目标，查看、复制、删除、导出与预设模板 |
 
-## ✅ 当前清理范围
+## 下载与安装
 
-默认安全项：
+1. 从 [GitHub Releases](https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.4.0) 下载 `FCPXTools-0.4.0.zip`。
+2. 解压并将 `FCPX 工具箱.app` 拖入 **应用程序** 文件夹。
+3. 首次启动如遇 Gatekeeper 提示，可在 **系统设置 > 隐私与安全性** 中选择“仍要打开”。
 
-- `Render Files`
-- `Analysis Files`
-- `Waveform Cache Files`
-- `Thumbnail Media`
+> 也可直接查看离线产品主页：[docs/index.html](./docs/index.html)
 
-需要手动确认：
+## 系统要求
 
-- `Transcoded Media / High Quality Media`
-- `Transcoded Media / Proxy Media`
-- `Shared Items`
+- macOS 14 或更高版本
+- Swift 5.9
+- Final Cut Pro（功能模块按需使用）
 
-永不清理：
+## 构建与运行
 
-- `Original Media`
-
-## 🚀 快速开始
-
-### 运行 SwiftUI 原生版
+### 本地运行
 
 ```bash
 cd native
@@ -120,13 +71,13 @@ iconutil -c icns assets/AppIcon.iconset -o assets/AppIcon.icns
 scripts/build-native.sh
 ```
 
-构建后的 App 位于：
+构建产物位于：
 
 ```text
 dist/native-v0.4/FCPX 工具箱.app
 ```
 
-### 打包本地安装包
+### 打包安装包
 
 ```bash
 scripts/package-local.sh
@@ -138,73 +89,34 @@ scripts/package-local.sh
 dist/FCPXTools-0.4.0.zip
 ```
 
-## 🗂️ 目录结构
+## 技术栈
 
-```text
-.
-├── assets/                  # App 图标资源
-├── native/                  # SwiftUI 原生应用
-│   ├── Package.swift
-│   └── Sources/FCPXToolbox/
-│       ├── App/             # 应用入口、根视图、主题
-│       ├── Cleanup/         # 清理助手模块
-│       ├── Templates/       # 模板库模块
-│       ├── QuickAccess/     # 快捷打开模块
-│       ├── ProcessManager/  # 进程管理模块
-│       ├── HealthCheck/     # 健康检查模块
-│       ├── ArchiveManager/  # 归档管理模块
-│       ├── SubtitleTool/    # 快速字幕模块
-│       ├── DestinationManager/ # 输出管理模块
-│       └── Shared/          # 共享工具（格式化、文件操作）
-├── scripts/                 # 图标生成、构建、打包脚本
-└── README.md
-```
+- Swift 5.9
+- SwiftUI
+- Swift Package Manager
+- Speech 框架（语音识别字幕）
+- AVFoundation（音频处理）
+- macOS `FileManager.trashItem`（安全移入废纸篓）
 
-## 🧑‍💻 技术栈
+## 使用提醒
 
-- 🍎 Swift 5.9
-- 🖥️ SwiftUI
-- 📦 Swift Package Manager
-- 🗣️ Speech 框架（ASR 语音识别）
-- 🎵 AVFoundation（音频处理）
-- 🔤 Geist Mono 等宽字体（21th 设计系统）
-- 🧼 macOS `FileManager.trashItem` 安全移入废纸篓
-
-## ⚠️ 使用提醒
-
-- 建议在清理前关闭 Final Cut Pro，避免资源库正在写入。
-- 第一次扫描大体量素材盘时可能需要更久，取决于磁盘速度和文件数量。
+- 清理前建议关闭 Final Cut Pro，避免资源库正在写入。
+- 第一次扫描大体量素材盘可能需要更久，取决于磁盘速度和文件数量。
 - 代理媒体、优化媒体和共享导出文件会影响工作流，请确认后再清理。
-- 本项目不会删除 `Original Media`。
+- 本项目**不会删除**原始媒体文件（`Original Media`）。
 - 快速字幕功能需要麦克风 / 语音识别权限。
-- 进程管理功能读取内存占用需 macOS 系统权限。
 
-## 🗺️ 项目路线图
-
-| 版本 | 内容 | 状态 |
-| --- | --- | --- |
-| v0.3.x | 清理助手 + 模板库 | ✅ 已完成 |
-| v0.4.0 | 快捷打开 + 进程管理 + 健康检查 + 归档管理 + 快速字幕 + 输出管理 | ✅ 已完成 |
-| v0.5 | 深色模式 + 国际化 + 设置模块 + 关于页面 | 🔜 计划中 |
-| v0.6 | 欢迎引导 + 快捷键菜单 + 功能增强 | 📋 待定 |
-| v0.7 | 性能优化 + 测试覆盖达标 | 📋 待定 |
-| v0.8 | 签名 + DMG + 公证 | 📋 待定 |
-| v0.9 | Sparkle 自动更新 + 反馈 + 崩溃报告 | 📋 待定 |
-| v1.0 | 文档 + 截图 + 最终打磨 | 📋 待定 |
-
-> 完整提升计划请参考 [`.trae/documents/fcpx-toolbox-production-plan.md`](.trae/documents/fcpx-toolbox-production-plan.md)
-
-## 🤝 贡献
+## 贡献
 
 欢迎提交 Issue 和 Pull Request。适合贡献的方向包括：
 
-- 扫描规则补充
-- UI 体验优化
-- 更完整的测试 fixture
-- 签名、公证和正式 DMG 分发流程
+- 扫描规则与清理策略优化
+- UI / 交互体验改进
+- 测试覆盖与 fixture 完善
+- 签名、公证与正式 DMG 分发流程
 - 英文界面与多语言支持
 - 新功能模块开发
 
-## 📄 开源协议
+## 开源协议
 
 本项目基于 [MIT License](LICENSE) 开源。

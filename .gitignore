@@ -32,3 +32,10 @@ out/
 # Runtime / cache
 *.log
 *.tmp
+
+# Agent / IDE planning docs
+.trae/
+
+# Local website dev server files
+docs/.cache
+.cache/

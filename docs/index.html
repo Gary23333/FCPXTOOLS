@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FCPX 工具箱 — macOS 原生 Final Cut Pro 工具箱</title>
+  <meta name="description" content="为 Final Cut Pro 剪辑师打造的 macOS 原生工具箱。10 款专业工具，原生 SwiftUI，免费开源。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;1,6..96,400&family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="assets/app-icon.png" type="image/png">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <header class="site-header" id="top">
+    <div class="container header-inner">
+      <a href="#top" class="logo">
+        <span class="logo-mark"></span>
+        <span>FCPX 工具箱</span>
+      </a>
+      <nav class="nav" aria-label="主导航">
+        <a href="#features">功能</a>
+        <a href="#preview">预览</a>
+        <a href="#download">下载</a>
+        <a href="#faq">常见问题</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow mono load-fade">macOS NATIVE · v0.4.0</p>
+          <h1 class="hero-title load-fade">FCPX<br><span class="accent-line">工具箱</span></h1>
+          <p class="hero-tagline load-fade">为 Final Cut Pro 剪辑师打造的 macOS 原生工具箱</p>
+          <div class="hero-actions load-fade">
+            <a class="btn btn-primary" href="https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.4.0" target="_blank" rel="noopener">
+              <span>免费下载 v0.4.0</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </a>
+            <a class="btn btn-secondary" href="https://github.com/Gary23333/FCPXTOOLS" target="_blank" rel="noopener">GitHub 仓库</a>
+          </div>
+          <div class="trust-bar load-fade">
+            <span class="badge"><span class="dot"></span>macOS 14+</span>
+            <span class="badge"><span class="dot"></span>SwiftUI</span>
+            <span class="badge"><span class="dot"></span>MIT 许可证</span>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="icon-frame reveal">
+            <img src="assets/app-icon.png" alt="FCPX 工具箱应用图标" width="256" height="256">
+            <div class="icon-rim"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="eyebrow mono">10 Modules</p>
+          <h2 class="section-title">剪辑工作流，<br>一套工具打通。</h2>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card reveal">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <h3>快捷打开</h3>
+            <p>一键直达 Final Cut Pro 资源库、项目文件与常用目录，省去 Finder 中反复翻找的麻烦。</p>
+          </article>
+          <article class="feature-card reveal">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </div>
+            <h3>清理助手</h3>
+            <p>安全扫描并清理渲染缓存、代理文件与日志，释放磁盘空间，保持工程轻装上阵。</p>
+          </article>
+          <article class="feature-card reveal">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            </div>
+            <h3>模板库</h3>
+            <p>集中管理标题、转场、效果与复合片段模板，快速预览并调用，让常用资产触手可及。</p>
+          </article>
+          <article class="feature-card reveal">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+            </div>
+            <h3>插件管理</h3>
+            <p>查看已安装的 Motion 与 FxPlug 插件，启用、禁用或定位文件，排查插件冲突更高效。</p>
+          </article>
+          <article class="feature-card reveal">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            </div>
+            <h3>色彩管理</h3>
+            <p>检查资源库色彩空间、LUT 与项目设置，确保从剪辑到输出的色彩一致性。</p>
+          </article>
+          <article class="feature-card reveal">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01"/></svg>
+            </div>
+            <h3>快捷键管理</h3>
+            <p>备份、恢复与切换自定义命令编辑器布局，打造属于你的 Final Cut Pro 操作节奏。</p>
+          </article>
+          <article class="feature-card reveal">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <h3>健康检查</h3>
+            <p>自动检测资源库完整性、磁盘空间与工程异常，提前发现潜在问题，避免项目崩溃。</p>
+          </article>
+          <article class="feature-card reveal">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+            </div>
+            <h3>归档管理</h3>
+            <p>按日期与项目整理原始素材、工程与导出文件，生成清晰的归档结构，方便长期留存。</p>
+          </article>
+          <article class="feature-card reveal">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h20M2 12h20M2 17h12"/></svg>
+            </div>
+            <h3>快速字幕</h3>
+            <p>基于 macOS Speech 框架的 ASR 语音识别，自动生成 SRT 字幕文件，支持简繁中文、英语、日语、韩语。</p>
+          </article>
+          <article class="feature-card reveal">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </div>
+            <h3>输出管理</h3>
+            <p>管理 FCPX 输出目标（Share Destinations），解析 plist 配置，查看、复制、删除、导出，内置 6 种预设模板。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="preview" class="preview">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="eyebrow mono">Interface</p>
+          <h2 class="section-title">原生、紧凑、<br>为剪辑师设计。</h2>
+        </div>
+        <div class="app-mock reveal">
+          <div class="mock-scan" aria-hidden="true"></div>
+          <div class="mock-header">
+            <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+            <div class="window-title mono">FCPX 工具箱 · v0.4.0</div>
+          </div>
+          <div class="mock-body">
+            <aside class="mock-sidebar">
+              <div class="sidebar-title mono">TOOLBOX</div>
+              <ul>
+                <li class="active"><span class="mono">01</span>快捷打开</li>
+                <li><span class="mono">02</span>清理助手</li>
+                <li><span class="mono">03</span>模板库</li>
+                <li><span class="mono">04</span>插件管理</li>
+                <li><span class="mono">05</span>色彩管理</li>
+                <li><span class="mono">06</span>快捷键管理</li>
+                <li><span class="mono">07</span>健康检查</li>
+                <li><span class="mono">08</span>归档管理</li>
+                <li><span class="mono">09</span>快速字幕</li>
+                <li><span class="mono">10</span>输出管理</li>
+              </ul>
+            </aside>
+            <div class="mock-main">
+              <div class="mock-toolbar">
+                <div class="tb-segment active">最近项目</div>
+                <div class="tb-segment">收藏夹</div>
+                <div class="tb-spacer"></div>
+                <div class="tb-search mono">Search...</div>
+              </div>
+              <div class="mock-content">
+                <div class="quick-card"><span class="mono">01</span><h4>打开资源库</h4><p>一键定位 Final Cut Pro 资源库目录</p></div>
+                <div class="quick-card"><span class="mono">02</span><h4>渲染文件清理</h4><p>安全移除过期渲染与代理缓存</p></div>
+                <div class="quick-card"><span class="mono">03</span><h4>项目归档</h4><p>整理原始素材与项目包到归档目录</p></div>
+                <div class="status-panel">
+                  <div class="status-row"><span class="status-dot green"></span><span>资源库健康</span><span class="mono status-value">正常</span></div>
+                  <div class="status-row"><span class="status-dot orange"></span><span>磁盘剩余</span><span class="mono status-value">128 GB</span></div>
+                  <div class="status-row"><span class="status-dot"></span><span>当前版本</span><span class="mono status-value">0.4.0</span></div>
+                </div>
+                <div class="timeline-strip mono">
+                  <span>00:00:00:00</span>
+                  <span class="tl-bar"></span>
+                  <span>00:02:15:08</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="download" class="download">
+      <div class="container">
+        <div class="download-card reveal">
+          <p class="eyebrow mono">Get Started</p>
+          <h2 class="section-title">准备升级你的<br>Final Cut Pro 工作流？</h2>
+          <p class="download-sub">免费下载，MIT 开源。无需注册，解压即用。</p>
+          <a class="btn btn-primary btn-large" href="https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.4.0" target="_blank" rel="noopener">
+            <span>下载 FCPX 工具箱 v0.4.0</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </a>
+          <div class="download-meta mono">
+            <span>macOS 14 或更高版本</span>
+            <span class="sep">·</span>
+            <span>Universal / Apple Silicon</span>
+            <span class="sep">·</span>
+            <a href="https://github.com/Gary23333/FCPXTOOLS/releases" target="_blank" rel="noopener">查看所有版本</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="faq">
+      <div class="container">
+        <div class="section-head reveal">
+          <p class="eyebrow mono">FAQ</p>
+          <h2 class="section-title">常见问题</h2>
+        </div>
+        <div class="faq-list">
+          <div class="faq-item reveal">
+            <button class="faq-question" aria-expanded="false">
+              <span>FCPX 工具箱是免费的吗？</span>
+              <span class="faq-toggle" aria-hidden="true"><span></span><span></span></span>
+            </button>
+            <div class="faq-answer"><p>是的。项目基于 MIT 许可证开源，你可以免费下载、使用、修改和分发。</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-question" aria-expanded="false">
+              <span>支持哪些 macOS 版本？</span>
+              <span class="faq-toggle" aria-hidden="true"><span></span><span></span></span>
+            </button>
+            <div class="faq-answer"><p>当前版本需要 macOS 14 或更高版本，使用原生 SwiftUI 构建，针对 Apple Silicon 与 Intel Mac 均有优化。</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-question" aria-expanded="false">
+              <span>使用清理助手会误删重要文件吗？</span>
+              <span class="faq-toggle" aria-hidden="true"><span></span><span></span></span>
+            </button>
+            <div class="faq-answer"><p>清理助手只会扫描可重建的缓存与临时文件，并在执行前展示清单供你确认。建议操作前备份关键资源库。</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-question" aria-expanded="false">
+              <span>如何参与贡献？</span>
+              <span class="faq-toggle" aria-hidden="true"><span></span><span></span></span>
+            </button>
+            <div class="faq-answer"><p>欢迎通过 GitHub 提交 Issue 或 Pull Request。你可以在仓库中找到构建说明与贡献指南。</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-question" aria-expanded="false">
+              <span>后续会支持更多 Final Cut Pro 工具吗？</span>
+              <span class="faq-toggle" aria-hidden="true"><span></span><span></span></span>
+            </button>
+            <div class="faq-answer"><p>会。我们围绕剪辑师工作流持续迭代，新模块与改进将在 GitHub Releases 中发布。</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <strong>FCPX 工具箱</strong>
+        <p class="mono">Final Cut Pro Toolbox for macOS</p>
+      </div>
+      <nav class="footer-links" aria-label="页脚导航">
+        <a href="https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.4.0" target="_blank" rel="noopener">下载</a>
+        <a href="https://github.com/Gary23333/FCPXTOOLS" target="_blank" rel="noopener">GitHub</a>
+        <a href="#faq">常见问题</a>
+      </nav>
+      <p class="copyright mono">© 2026 FCPX 工具箱 · MIT License</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
