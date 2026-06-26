@@ -47,7 +47,7 @@ struct ThumbnailView: View {
             if isDarkBackground {
                 Color(hex: 0x1F1F1F) // 固定深色背景，用于凸显透明字幕/标题
             }
-            
+
             if let image {
                 Image(nsImage: image)
                     .resizable()
@@ -61,6 +61,8 @@ struct ThumbnailView: View {
                     .foregroundStyle(Theme.textSecondary)
             }
         }
+        .aspectRatio(16 / 9, contentMode: .fit)
+        .clipped()
         .task(id: url) {
             image = nil
             guard let url else { return }

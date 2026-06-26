@@ -144,9 +144,7 @@ struct TemplateLibraryView: View {
         let selected = model.selectedItemID == item.id
         return VStack(alignment: .leading, spacing: 6) {
             ThumbnailView(url: item.posterURL, isDarkBackground: item.category == .titles)
-                .frame(height: 104)
                 .frame(maxWidth: .infinity)
-                .clipShape(Rectangle())
                 .overlay(alignment: .topTrailing) {
                     HStack(spacing: 4) {
                         if item.isWritable {
