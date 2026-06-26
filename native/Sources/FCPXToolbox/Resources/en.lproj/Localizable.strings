@@ -1,0 +1,41 @@
+/* Sidebar & Tabs */
+"快捷工具" = "Quick Tools";
+"资源管理" = "Assets";
+"创作辅助" = "Creativity Helper";
+"快捷打开" = "Quick Access";
+"进程管理" = "Process Monitor";
+"清理助手" = "Cleaner";
+"模板库" = "Templates Library";
+"健康检查" = "Health Check";
+"归档管理" = "Archiver";
+"快速字幕" = "Speech Captions";
+"输出管理" = "Destinations Manager";
+
+/* App Titles & General */
+"FCPX 工具箱" = "FCPX Toolbox";
+"版本" = "Version";
+"关于" = "About";
+"设置" = "Settings";
+"关于 FCPX 工具箱" = "About FCPX Toolbox";
+"默认扫描目录" = "Default Scan Path";
+"清理前二次确认" = "Confirm Before Cleaning";
+"自动检查更新" = "Check Updates Automatically";
+"外观模式" = "Appearance";
+"系统默认" = "System Default";
+"浅色" = "Light Mode";
+"深色" = "Dark Mode";
+"语言" = "Language";
+"跟随系统" = "System Language";
+"启动默认版块" = "Default On Startup";
+"重置" = "Reset";
+"重置为默认值" = "Reset to Defaults";
+"确定" = "OK";
+"取消" = "Cancel";
+"完成" = "Done";
+
+/* Status / Errors */
+"扫描中..." = "Scanning...";
+"未发现可归档的素材" = "No archivable resources found";
+"归档中..." = "Archiving...";
+"清理完成" = "Cleaning completed";
+"已选择文件，点击「开始转录」" = "File selected, click 'Start Transcription'";

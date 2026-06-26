@@ -3,9 +3,11 @@ import SwiftUI
 /// 工具箱顶层分区。
 enum ToolSection: String, CaseIterable, Identifiable {
     case quickAccess = "快捷打开"
-    case process = "进程管理"
     case cleanup = "清理助手"
     case templates = "模板库"
+    case plugins = "插件管理"
+    case color = "色彩管理"
+    case shortcuts = "快捷键管理"
     case healthCheck = "健康检查"
     case archive = "归档管理"
     case subtitle = "快速字幕"
@@ -16,9 +18,11 @@ enum ToolSection: String, CaseIterable, Identifiable {
     var systemImage: String {
         switch self {
         case .quickAccess: return "bolt.horizontal.circle"
-        case .process: return "activity"
         case .cleanup: return "sparkles"
         case .templates: return "square.grid.2x2"
+        case .plugins: return "puzzlepiece"
+        case .color: return "paintpalette"
+        case .shortcuts: return "keyboard"
         case .healthCheck: return "heart.text.square"
         case .archive: return "archivebox"
         case .subtitle: return "captions.bubble"
@@ -29,8 +33,8 @@ enum ToolSection: String, CaseIterable, Identifiable {
     /// 侧边栏分组。
     var group: String {
         switch self {
-        case .quickAccess, .process: return "快捷工具"
-        case .cleanup, .templates, .healthCheck, .archive: return "资源管理"
+        case .quickAccess: return "快捷工具"
+        case .cleanup, .templates, .plugins, .color, .shortcuts, .healthCheck, .archive: return "资源管理"
         case .subtitle, .destination: return "创作辅助"
         }
     }
@@ -39,58 +43,51 @@ enum ToolSection: String, CaseIterable, Identifiable {
 struct RootView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var cleanupModel = CleanupViewModel()
+    @StateObject private var processModel = ProcessManagerViewModel()
+    @StateObject private var healthCheckModel = HealthCheckViewModel()
+    @StateObject private var archiveModel = ArchiveManagerViewModel()
+    @StateObject private var templateModel = TemplateLibraryViewModel()
+
+    @State private var showingOnboarding = false
+    @State private var showingProcessPopover = false
 
     private var section: ToolSection {
         get { appState.selectedSection }
     }
 
-    private var groupedSections: [(String, [ToolSection])] {
-        let order: [String] = ["快捷工具", "资源管理", "创作辅助"]
-        return order.map { group in
-            (group, ToolSection.allCases.filter { $0.group == group })
-        }
-    }
-
     var body: some View {
-        NavigationSplitView {
-            sidebar
-                .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 260)
-        } detail: {
-            detailView
-        }
-        .navigationTitle("FCPX 工具箱")
-    }
+        HStack(spacing: 0) {
+            // 21th sidebar
+            NeoSidebar(selection: Binding(
+                get: { appState.selectedSection },
+                set: { appState.selectedSection = $0 }
+            ))
+            .frame(width: 200)
+            .overlay(
+                Rectangle()
+                    .stroke(Theme.border, lineWidth: ShapeToken.borderWidth)
+            )
 
-    // MARK: - 侧边栏
+            // Main content
+            VStack(spacing: 0) {
+                detailView
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-    private var sidebar: some View {
-        List(selection: Binding(
-            get: { appState.selectedSection },
-            set: { if let s = $0 { appState.selectedSection = s } }
-        )) {
-            ForEach(groupedSections, id: \.0) { group, sections in
-                Section(group) {
-                    ForEach(sections) { item in
-                        sidebarRow(item)
-                    }
-                }
+                bottomStatusBar
             }
         }
-        .listStyle(.sidebar)
-    }
-
-    private func sidebarRow(_ item: ToolSection) -> some View {
-        Label {
-            Text(item.rawValue)
-                .font(.system(size: 13, weight: .medium))
-        } icon: {
-            Image(systemName: item.systemImage)
-                .font(.system(size: 14))
-                .foregroundStyle(section == item ? Theme.accent : Theme.textSecondary)
-                .frame(width: 20)
+        .background(Theme.background)
+        .sheet(isPresented: $showingOnboarding) {
+            OnboardingView {
+                showingOnboarding = false
+            }
         }
-        .tag(item)
-        .padding(.vertical, 3)
+        .onAppear {
+            FontLoader.registerFonts()
+            if !AppPreferences.shared.hasCompletedOnboarding {
+                showingOnboarding = true
+            }
+        }
     }
 
     // MARK: - 详情视图
@@ -100,20 +97,72 @@ struct RootView: View {
         switch section {
         case .quickAccess:
             QuickAccessView()
-        case .process:
-            ProcessManagerView()
         case .cleanup:
             CleanupView(model: cleanupModel)
         case .templates:
-            TemplateLibraryView()
+            TemplateLibraryView(model: templateModel)
+        case .plugins:
+            PluginManagerView()
+        case .color:
+            ColorManagerView()
+        case .shortcuts:
+            ShortcutManagerView()
         case .healthCheck:
-            HealthCheckView()
+            HealthCheckView(model: healthCheckModel)
         case .archive:
-            ArchiveManagerView()
+            ArchiveManagerView(model: archiveModel)
         case .subtitle:
             SubtitleToolView()
         case .destination:
             DestinationManagerView()
         }
+    }
+
+    // MARK: - 全局状态栏
+
+    private var bottomStatusBar: some View {
+        HStack {
+            HStack(spacing: Spacing.xxs) {
+                Circle()
+                    .fill(processModel.isRunning ? Theme.safe : Theme.textSecondary)
+                    .frame(width: 6, height: 6)
+                Text(processModel.isRunning ? "FCPX 运行中" : "FCPX 未运行")
+                    .font(FT.label(11))
+                    .foregroundStyle(Theme.textPrimary)
+
+                if processModel.isRunning {
+                    Text("· MEM: \(DisplayFormat.byteString(processModel.residentBytes))")
+                        .font(FT.label(10))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+            }
+            .padding(.horizontal, Spacing.xs)
+            .padding(.vertical, 5)
+            .background(Theme.panel)
+            .overlay(
+                Rectangle()
+                    .stroke(Theme.border, lineWidth: 1)
+            )
+            .onTapGesture {
+                showingProcessPopover.toggle()
+            }
+            .popover(isPresented: $showingProcessPopover, arrowEdge: .top) {
+                ProcessManagerView(model: processModel)
+                    .frame(width: 320, height: 260)
+            }
+
+            Spacer()
+
+            Text("FCPX TOOLBOX \(AppInfo.displayVersion)")
+                .font(FT.label(10))
+                .foregroundStyle(Theme.textMuted)
+        }
+        .padding(.horizontal, Spacing.sm)
+        .padding(.vertical, Spacing.xxs)
+        .background(Theme.panel)
+        .overlay(
+            Rectangle()
+                .stroke(Theme.border, lineWidth: 1)
+        )
     }
 }

@@ -243,17 +243,17 @@ struct DestinationManagerView: View {
     @StateObject private var model = DestinationManagerViewModel()
     @State private var itemPendingDelete: DestinationItem?
 
-    private let presetColumns = [GridItem(.adaptive(minimum: 220, maximum: 280), spacing: 10)]
+    private let presetColumns = [GridItem(.adaptive(minimum: 220, maximum: 280), spacing: Spacing.sm)]
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: Spacing.xs) {
             toolbar
             summaryCards
             content
             newDestinationSection
             statusBar
         }
-        .padding(18)
+        .padding(Spacing.lg)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.background)
         .onAppear {
@@ -290,59 +290,37 @@ struct DestinationManagerView: View {
     // MARK: - 工具栏
 
     private var toolbar: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "square.and.arrow.up.on.square")
-                .font(.system(size: 26))
-                .foregroundStyle(Theme.accent)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("输出方式管理")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(Theme.textPrimary)
-                Text(model.destinationsURL.path)
-                    .font(.system(size: 12))
-                    .foregroundStyle(Theme.textSecondary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-            }
-            Spacer()
-            toolbarButton("重新扫描", systemImage: "arrow.clockwise", isEnabled: !model.scanning) {
+        HStack(spacing: Spacing.xs) {
+            NeoSectionHeader(
+                systemImage: "square.and.arrow.up.on.square",
+                title: "输出方式管理",
+                subtitle: model.destinationsURL.path
+            )
+            NeoButton(
+                title: "重新扫描",
+                systemImage: "arrow.clockwise",
+                style: .secondary,
+                size: .sm,
+                isEnabled: !model.scanning
+            ) {
                 model.scan()
             }
-            toolbarButton("打开目录", systemImage: "folder", isEnabled: true) {
+            NeoButton(
+                title: "打开目录",
+                systemImage: "folder",
+                style: .secondary,
+                size: .sm,
+                isEnabled: true
+            ) {
                 model.openDestinationsFolder()
             }
         }
     }
 
-    private func toolbarButton(
-        _ title: String,
-        systemImage: String,
-        isEnabled: Bool,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Label(title, systemImage: systemImage)
-                .font(.system(size: 12, weight: .semibold))
-                .lineLimit(1)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Theme.panel)
-                .foregroundStyle(Theme.accent)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .stroke(Theme.line, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                .opacity(isEnabled ? 1 : 0.42)
-        }
-        .buttonStyle(.plain)
-        .disabled(!isEnabled)
-    }
-
     // MARK: - 统计卡片
 
     private var summaryCards: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Spacing.sm) {
             summaryCard("输出目标总数", "\(model.totalCount)", Theme.textPrimary, "square.and.arrow")
             summaryCard("自定义数量", "\(model.customCount)", Theme.accent, "wrench.and.screwdriver")
             summaryCard("默认数量", "\(model.defaultCount)", Theme.textPrimary, "checkmark.seal")
@@ -352,29 +330,29 @@ struct DestinationManagerView: View {
 
     private func summaryCard(_ title: String, _ value: String, _ color: Color, _ systemImage: String) -> some View {
         Card {
-            HStack(spacing: 12) {
+            HStack(spacing: Spacing.xs) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 22))
+                    .font(FT.title())
                     .foregroundStyle(color.opacity(0.8))
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: Spacing.xxxs) {
                     Text(title)
-                        .font(.system(size: 12))
+                        .font(FT.label())
                         .foregroundStyle(Theme.textSecondary)
                     Text(value)
-                        .font(.system(size: 24, weight: .bold))
+                        .font(FT.metric())
                         .foregroundStyle(color)
                 }
                 Spacer()
             }
-            .padding(.vertical, 12)
-            .padding(.horizontal, 14)
+            .padding(.vertical, Spacing.xs)
+            .padding(.horizontal, Spacing.sm)
         }
     }
 
     // MARK: - 主内容：列表 + 详情
 
     private var content: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Spacing.sm) {
             destinationList
                 .frame(maxWidth: .infinity)
                 .frame(minWidth: 300)
@@ -388,14 +366,14 @@ struct DestinationManagerView: View {
 
     private var destinationList: some View {
         Card {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 HStack {
                     Text("输出目标列表")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(FT.data(15, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Text("\(model.destinations.count) 项")
-                        .font(.system(size: 11))
+                        .font(FT.label(11))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 if model.scanning && model.destinations.isEmpty {
@@ -415,43 +393,38 @@ struct DestinationManagerView: View {
                     .scrollContentBackground(.hidden)
                 }
             }
-            .padding(12)
+            .padding(Spacing.xs)
         }
     }
 
     private func destinationRow(_ item: DestinationItem) -> some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Spacing.sm) {
             Image(systemName: item.type.systemImage)
-                .font(.system(size: 18))
+                .font(FT.data(18, weight: .semibold))
                 .foregroundStyle(Theme.accent)
                 .frame(width: 24)
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
+            VStack(alignment: .leading, spacing: Spacing.xxxs) {
+                HStack(spacing: Spacing.xxxs) {
                     Text(item.name)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(FT.data(13, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                         .truncationMode(.middle)
                     if item.isDefault {
-                        Text("默认")
-                            .font(.system(size: 10, weight: .semibold))
-                            .padding(.horizontal, 6).padding(.vertical, 1)
-                            .background(Theme.accent.opacity(0.14))
-                            .foregroundStyle(Theme.accent)
-                            .clipShape(Capsule())
+                        NeoBadge(text: "默认", style: .accent)
                     }
                 }
                 Text("\(item.format) · \(item.resolution)")
-                    .font(.system(size: 11))
+                    .font(FT.data(11))
                     .foregroundStyle(Theme.textSecondary)
                     .lineLimit(1)
             }
             Spacer()
             Text(DisplayFormat.dateString(item.modifiedAt))
-                .font(.system(size: 11))
+                .font(FT.data(11))
                 .foregroundStyle(Theme.textSecondary)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Spacing.xxxs)
         .contentShape(Rectangle())
         .contextMenu {
             Button("在 Finder 显示") { model.openInFinder(item) }
@@ -463,11 +436,11 @@ struct DestinationManagerView: View {
     }
 
     private var loadingState: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: Spacing.sm) {
             Spacer()
             ProgressView().controlSize(.large)
             Text(model.statusText)
-                .font(.system(size: 12))
+                .font(FT.label())
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
         }
@@ -475,20 +448,20 @@ struct DestinationManagerView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.xxs) {
             Spacer()
             Image(systemName: "square.and.arrow.up.on.square")
-                .font(.system(size: 34))
+                .font(FT.metric())
                 .foregroundStyle(Theme.textSecondary)
             Text("未发现输出目标")
                 .foregroundStyle(Theme.textSecondary)
             Text(model.statusText)
-                .font(.system(size: 12))
+                .font(FT.label())
                 .foregroundStyle(Theme.textSecondary)
             Button("打开目录") { model.openDestinationsFolder() }
                 .buttonStyle(.plain)
                 .foregroundStyle(Theme.accent)
-                .font(.system(size: 12, weight: .semibold))
+                .font(FT.label(12, weight: .semibold))
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -502,45 +475,40 @@ struct DestinationManagerView: View {
                 if let item = model.selectedDestination {
                     detailContent(item)
                 } else {
-                    VStack(spacing: 6) {
+                    VStack(spacing: Spacing.xxxs) {
                         Spacer()
                         Text("未选择输出目标")
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(FT.data(18, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                         Text("在左侧列表选择一项查看详情")
-                            .font(.system(size: 12))
+                            .font(FT.label())
                             .foregroundStyle(Theme.textSecondary)
                         Spacer()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            .padding(14)
+            .padding(Spacing.sm)
         }
     }
 
     private func detailContent(_ item: DestinationItem) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            HStack(spacing: Spacing.sm) {
                 Image(systemName: item.type.systemImage)
-                    .font(.system(size: 28))
+                    .font(FT.metric())
                     .foregroundStyle(Theme.accent)
-                VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 6) {
+                VStack(alignment: .leading, spacing: Spacing.xxxs) {
+                    HStack(spacing: Spacing.xxxs) {
                         Text(item.name)
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(FT.data(18, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                         if item.isDefault {
-                            Text("默认")
-                                .font(.system(size: 10, weight: .semibold))
-                                .padding(.horizontal, 6).padding(.vertical, 1)
-                                .background(Theme.accent.opacity(0.14))
-                                .foregroundStyle(Theme.accent)
-                                .clipShape(Capsule())
+                            NeoBadge(text: "默认", style: .accent)
                         }
                     }
                     Text(item.type.rawValue)
-                        .font(.system(size: 12))
+                        .font(FT.label())
                         .foregroundStyle(Theme.textSecondary)
                 }
                 Spacer()
@@ -548,7 +516,7 @@ struct DestinationManagerView: View {
 
             Divider()
 
-            VStack(spacing: 8) {
+            VStack(spacing: Spacing.xxs) {
                 infoRow(title: "类型", value: item.type.rawValue)
                 infoRow(title: "格式", value: item.format)
                 infoRow(title: "分辨率", value: item.resolution)
@@ -559,18 +527,38 @@ struct DestinationManagerView: View {
 
             Divider()
 
-            HStack(spacing: 8) {
-                actionButton("在 Finder 显示", systemImage: "folder") {
+            HStack(spacing: Spacing.xxs) {
+                NeoButton(
+                    title: "在 Finder 显示",
+                    systemImage: "folder",
+                    style: .secondary,
+                    size: .sm
+                ) {
                     model.openInFinder(item)
                 }
-                actionButton("复制", systemImage: "plus.square.on.square") {
+                NeoButton(
+                    title: "复制",
+                    systemImage: "plus.square.on.square",
+                    style: .secondary,
+                    size: .sm
+                ) {
                     model.duplicateDestination(item)
                 }
-                actionButton("导出…", systemImage: "square.and.arrow.up") {
+                NeoButton(
+                    title: "导出…",
+                    systemImage: "square.and.arrow.up",
+                    style: .secondary,
+                    size: .sm
+                ) {
                     model.exportDestination(item)
                 }
                 Spacer()
-                actionButton("删除", systemImage: "trash", color: Theme.danger) {
+                NeoButton(
+                    title: "删除",
+                    systemImage: "trash",
+                    style: .destructive,
+                    size: .sm
+                ) {
                     itemPendingDelete = item
                 }
             }
@@ -579,13 +567,13 @@ struct DestinationManagerView: View {
     }
 
     private func infoRow(title: String, value: String, isPath: Bool = false) -> some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: Spacing.sm) {
             Text(title)
-                .font(.system(size: 12))
+                .font(FT.label())
                 .foregroundStyle(Theme.textSecondary)
                 .frame(width: 64, alignment: .leading)
             Text(value)
-                .font(.system(size: 12))
+                .font(FT.label())
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(isPath ? 2 : 1)
                 .truncationMode(.middle)
@@ -593,52 +581,29 @@ struct DestinationManagerView: View {
         }
     }
 
-    private func actionButton(
-        _ title: String,
-        systemImage: String,
-        color: Color = Theme.accent,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Label(title, systemImage: systemImage)
-                .font(.system(size: 12, weight: .semibold))
-                .lineLimit(1)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Theme.panel)
-                .foregroundStyle(color)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .stroke(Theme.line, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-        }
-        .buttonStyle(.plain)
-    }
-
     // MARK: - 新建输出目标
 
     private var newDestinationSection: some View {
         Card {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
                 HStack {
                     Image(systemName: "plus.square.dashed")
                         .foregroundStyle(Theme.accent)
                     Text("新建输出目标")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(FT.data(15, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Text("从预设模板创建")
-                        .font(.system(size: 11))
+                        .font(FT.label(11))
                         .foregroundStyle(Theme.textSecondary)
                 }
-                LazyVGrid(columns: presetColumns, spacing: 10) {
+                LazyVGrid(columns: presetColumns, spacing: Spacing.sm) {
                     ForEach(model.presets) { preset in
                         presetCard(preset)
                     }
                 }
             }
-            .padding(12)
+            .padding(Spacing.xs)
         }
     }
 
@@ -646,34 +611,33 @@ struct DestinationManagerView: View {
         Button {
             model.createFromPreset(preset)
         } label: {
-            HStack(spacing: 10) {
+            HStack(spacing: Spacing.sm) {
                 Image(systemName: preset.type.systemImage)
-                    .font(.system(size: 18))
+                    .font(FT.data(18, weight: .semibold))
                     .foregroundStyle(Theme.accent)
                     .frame(width: 24)
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Spacing.xxxs) {
                     Text(preset.name)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(FT.data(12, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     Text(preset.description)
-                        .font(.system(size: 10))
+                        .font(FT.label(10))
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(1)
                 }
                 Spacer()
                 Image(systemName: "plus.circle")
-                    .font(.system(size: 14))
+                    .font(FT.data())
                     .foregroundStyle(Theme.textSecondary)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
+            .padding(.horizontal, Spacing.sm)
+            .padding(.vertical, Spacing.xxs)
             .background(Theme.background)
             .overlay(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .stroke(Theme.line, lineWidth: 1)
+                Rectangle()
+                    .stroke(Theme.border, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         }
         .buttonStyle(.plain)
     }
@@ -681,13 +645,13 @@ struct DestinationManagerView: View {
     // MARK: - 状态栏
 
     private var statusBar: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: Spacing.xxs) {
             if model.scanning {
                 ProgressView()
                     .controlSize(.small)
             }
             Text(model.statusText)
-                .font(.system(size: 12))
+                .font(FT.label())
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
         }

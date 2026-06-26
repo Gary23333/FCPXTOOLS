@@ -45,7 +45,7 @@ final class SubtitleToolViewModel: ObservableObject {
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false
         panel.prompt = "选择"
-        panel.allowedContentTypes = [.mpeg4Movie, .quickTimeMovie, .movie, .mp3, .wav, .m4a, .audio]
+        panel.allowedContentTypes = [.mpeg4Movie, .quickTimeMovie, .movie, .mp3, .wav, UTType(filenameExtension: "m4a") ?? .audio, .audio]
         if panel.runModal() == .OK, let url = panel.url {
             audioFileURL = url
             entries = []
@@ -442,12 +442,12 @@ struct SubtitleToolView: View {
     @StateObject private var model = SubtitleToolViewModel()
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: Spacing.xs) {
             toolbar
             content
             statusBar
         }
-        .padding(18)
+        .padding(Spacing.lg)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.background)
         .alert("出错了", isPresented: errorBinding) {
@@ -460,23 +460,20 @@ struct SubtitleToolView: View {
     // MARK: - 工具栏
 
     private var toolbar: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "captions.bubble")
-                .font(.system(size: 26))
-                .foregroundStyle(Theme.accent)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("快速字幕")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(Theme.textPrimary)
-                Text(model.audioFileURL?.lastPathComponent ?? "选择音频或视频文件开始转录")
-                    .font(.system(size: 12))
-                    .foregroundStyle(Theme.textSecondary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-            }
-            Spacer()
+        HStack(spacing: Spacing.xs) {
+            NeoSectionHeader(
+                systemImage: "captions.bubble",
+                title: "快速字幕",
+                subtitle: model.audioFileURL?.lastPathComponent ?? "选择音频或视频文件开始转录"
+            )
             languageMenu
-            toolbarButton("选择文件", systemImage: "folder.badge.plus", isEnabled: !model.isBusy) {
+            NeoButton(
+                title: "选择文件",
+                systemImage: "folder.badge.plus",
+                style: .secondary,
+                size: .sm,
+                isEnabled: !model.isBusy
+            ) {
                 model.chooseFile()
             }
         }
@@ -490,7 +487,7 @@ struct SubtitleToolView: View {
                 }
             }
         } label: {
-            HStack(spacing: 5) {
+            HStack(spacing: Spacing.xxxs) {
                 Text("语言")
                     .foregroundStyle(Theme.textSecondary)
                 Text(model.selectedLanguage.displayName)
@@ -500,15 +497,14 @@ struct SubtitleToolView: View {
                     .font(.system(size: 9, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary)
             }
-            .font(.system(size: 12, weight: .medium))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
+            .font(FT.label(12, weight: .medium))
+            .padding(.horizontal, Spacing.sm)
+            .padding(.vertical, Spacing.xxxs)
             .background(Theme.panel)
             .overlay(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .stroke(Theme.line, lineWidth: 1)
+                Rectangle()
+                    .stroke(Theme.border, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         }
         .buttonStyle(.plain)
     }
@@ -516,7 +512,7 @@ struct SubtitleToolView: View {
     // MARK: - 主区
 
     private var content: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Spacing.sm) {
             leftPanel
                 .frame(width: 280)
             rightPanel
@@ -526,7 +522,7 @@ struct SubtitleToolView: View {
     }
 
     private var leftPanel: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: Spacing.sm) {
             fileInfoCard
             actionCard
             Spacer(minLength: 0)
@@ -535,9 +531,9 @@ struct SubtitleToolView: View {
 
     private var fileInfoCard: some View {
         Card {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text("文件信息")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(FT.data(15, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 if let url = model.audioFileURL {
                     infoRow("文件名", url.lastPathComponent)
@@ -545,19 +541,19 @@ struct SubtitleToolView: View {
                     infoRow("大小", DisplayFormat.byteString(model.fileSize))
                     infoRow("语言", model.selectedLanguage.displayName)
                 } else {
-                    HStack(spacing: 8) {
+                    HStack(spacing: Spacing.xxs) {
                         Image(systemName: "waveform")
-                            .font(.system(size: 28))
+                            .font(FT.metric())
                             .foregroundStyle(Theme.textSecondary)
                         Text("尚未选择文件")
-                            .font(.system(size: 12))
+                            .font(FT.label())
                             .foregroundStyle(Theme.textSecondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, 8)
+                    .padding(.vertical, Spacing.xxs)
                 }
             }
-            .padding(12)
+            .padding(Spacing.xs)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
@@ -565,11 +561,11 @@ struct SubtitleToolView: View {
     private func infoRow(_ title: String, _ value: String) -> some View {
         HStack {
             Text(title)
-                .font(.system(size: 12))
+                .font(FT.label())
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
             Text(value)
-                .font(.system(size: 12, weight: .medium))
+                .font(FT.label(12, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
                 .truncationMode(.middle)
@@ -578,126 +574,95 @@ struct SubtitleToolView: View {
 
     private var actionCard: some View {
         Card {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text("操作")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(FT.data(15, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
-                actionButton("开始转录", systemImage: "waveform", isEnabled: model.canTranscribe, isProminent: true) {
+                NeoButton(
+                    title: "开始转录",
+                    systemImage: "waveform",
+                    style: .primary,
+                    size: .md,
+                    isEnabled: model.canTranscribe
+                ) {
                     model.startTranscription()
                 }
                 if model.isBusy {
-                    actionButton("取消", systemImage: "stop.circle", isEnabled: true) {
+                    NeoButton(
+                        title: "取消",
+                        systemImage: "stop.circle",
+                        style: .ghost,
+                        size: .md,
+                        isEnabled: true
+                    ) {
                         model.cancelTranscription()
                     }
                 }
-                actionButton("导入 SRT", systemImage: "square.and.arrow.down", isEnabled: !model.isBusy) {
+                NeoButton(
+                    title: "导入 SRT",
+                    systemImage: "square.and.arrow.down",
+                    style: .secondary,
+                    size: .md,
+                    isEnabled: !model.isBusy
+                ) {
                     showImportPanel()
                 }
-                actionButton("导出 SRT", systemImage: "square.and.arrow.up", isEnabled: model.canExport) {
+                NeoButton(
+                    title: "导出 SRT",
+                    systemImage: "square.and.arrow.up",
+                    style: .secondary,
+                    size: .md,
+                    isEnabled: model.canExport
+                ) {
                     model.exportSRT()
                 }
             }
-            .padding(12)
+            .padding(Spacing.xs)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-    }
-
-    private func actionButton(
-        _ title: String,
-        systemImage: String,
-        isEnabled: Bool,
-        isProminent: Bool = false,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            HStack {
-                Image(systemName: systemImage)
-                    .font(.system(size: 12, weight: .semibold))
-                Text(title)
-                    .font(.system(size: 12, weight: .semibold))
-                Spacer()
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 7)
-            .background(isProminent ? Theme.accent : Theme.panel)
-            .foregroundStyle(isProminent ? Color.white : Theme.accent)
-            .overlay(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .stroke(isProminent ? Theme.accent : Theme.line, lineWidth: 1)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-            .opacity(isEnabled ? 1 : 0.42)
-        }
-        .buttonStyle(.plain)
-        .disabled(!isEnabled)
-    }
-
-    private func toolbarButton(
-        _ title: String,
-        systemImage: String,
-        isEnabled: Bool,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Label(title, systemImage: systemImage)
-                .font(.system(size: 12, weight: .semibold))
-                .lineLimit(1)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Theme.panel)
-                .foregroundStyle(Theme.accent)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .stroke(Theme.line, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                .opacity(isEnabled ? 1 : 0.42)
-        }
-        .buttonStyle(.plain)
-        .disabled(!isEnabled)
     }
 
     // MARK: - 字幕列表
 
     private var rightPanel: some View {
         Card {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 HStack {
                     Text("字幕条目")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(FT.data(15, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Text("共 \(model.entries.count) 条")
-                        .font(.system(size: 11))
+                        .font(FT.label(11))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 if model.entries.isEmpty {
                     emptyState
                 } else {
                     ScrollView {
-                        LazyVStack(spacing: 8) {
+                        LazyVStack(spacing: Spacing.xxs) {
                             ForEach(model.entries) { entry in
                                 entryRow(entry)
                             }
                         }
-                        .padding(2)
+                        .padding(Spacing.xxxs)
                     }
                 }
             }
-            .padding(12)
+            .padding(Spacing.xs)
         }
     }
 
     private var emptyState: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.xxs) {
             Spacer()
             Image(systemName: "captions.bubble")
-                .font(.system(size: 34))
+                .font(FT.metric())
                 .foregroundStyle(Theme.textSecondary)
             Text("暂无字幕")
                 .foregroundStyle(Theme.textSecondary)
             Text("选择文件后点击「开始转录」，或导入现有 SRT 文件")
-                .font(.system(size: 12))
+                .font(FT.label())
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
         }
@@ -714,21 +679,21 @@ struct SubtitleToolView: View {
             }
         )
         let isSelected = model.currentEntryID == entry.id
-        return VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
+        return VStack(alignment: .leading, spacing: Spacing.xxxs) {
+            HStack(spacing: Spacing.xxs) {
                 Text("\(entry.index)")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(FT.data(13, weight: .bold))
                     .foregroundStyle(Theme.accent)
                     .frame(width: 28, alignment: .center)
                 Text("\(entry.startTimeString) --> \(entry.endTimeString)")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(FT.data(11, weight: .medium))
                     .foregroundStyle(Theme.textSecondary)
                 Spacer()
                 Button {
                     model.addEntry(after: entry)
                 } label: {
                     Image(systemName: "plus.circle")
-                        .font(.system(size: 12))
+                        .font(FT.label())
                         .foregroundStyle(Theme.accent)
                 }
                 .buttonStyle(.plain)
@@ -736,30 +701,28 @@ struct SubtitleToolView: View {
                     model.deleteEntry(entry)
                 } label: {
                     Image(systemName: "trash")
-                        .font(.system(size: 12))
+                        .font(FT.label())
                         .foregroundStyle(Theme.danger)
                 }
                 .buttonStyle(.plain)
             }
             TextEditor(text: textBinding)
-                .font(.system(size: 13))
+                .font(FT.data())
                 .foregroundStyle(Theme.textPrimary)
                 .scrollContentBackground(.hidden)
                 .background(Theme.background)
                 .frame(height: 60)
-                .padding(4)
+                .padding(Spacing.xxxs)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 4, style: .continuous)
-                        .stroke(Theme.line, lineWidth: 1)
+                    Rectangle()
+                        .stroke(Theme.border, lineWidth: 1)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
         }
-        .padding(10)
+        .padding(Spacing.sm)
         .background(Theme.background)
-        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .stroke(isSelected ? Theme.accent : Theme.line, lineWidth: isSelected ? 2 : 1)
+            Rectangle()
+                .stroke(isSelected ? Theme.accent : Theme.border, lineWidth: isSelected ? 2 : 1)
         )
         .onTapGesture {
             model.currentEntryID = entry.id
@@ -769,16 +732,15 @@ struct SubtitleToolView: View {
     // MARK: - 状态栏
 
     private var statusBar: some View {
-        VStack(spacing: 6) {
-            ProgressView(value: model.progressValue)
-                .tint(Theme.accent)
+        VStack(spacing: Spacing.xxxs) {
+            NeoProgress(value: model.progressValue)
             HStack {
                 Text(model.statusText)
-                    .font(.system(size: 12))
+                    .font(FT.label())
                     .foregroundStyle(Theme.textSecondary)
                 Spacer()
                 Text(model.status.rawValue)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(FT.label(12, weight: .medium))
                     .foregroundStyle(statusColor)
             }
         }

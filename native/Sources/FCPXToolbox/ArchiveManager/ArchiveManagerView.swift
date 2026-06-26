@@ -138,7 +138,7 @@ final class ArchiveManagerViewModel: ObservableObject {
     }
 
     /// 扫描源目录下的 .fcpbundle 和媒体文件夹。
-    private static func scanDirectory(root: URL, progress: @escaping (Double) -> Void) -> [ArchivableItem] {
+    private nonisolated static func scanDirectory(root: URL, progress: @escaping @Sendable (Double) -> Void) -> [ArchivableItem] {
         let fm = FileManager.default
         var items: [ArchivableItem] = []
 
@@ -180,7 +180,7 @@ final class ArchiveManagerViewModel: ObservableObject {
     }
 
     /// 判断是否为媒体文件夹（直接包含媒体文件的目录）。
-    private static func isMediaFolder(_ url: URL) -> Bool {
+    private nonisolated static func isMediaFolder(_ url: URL) -> Bool {
         let fm = FileManager.default
         guard let entries = try? fm.contentsOfDirectory(
             at: url,
@@ -194,7 +194,7 @@ final class ArchiveManagerViewModel: ObservableObject {
     }
 
     /// 测量目录大小和文件数。
-    private static func measure(_ url: URL) -> (bytes: Int64, files: Int) {
+    private nonisolated static func measure(_ url: URL) -> (bytes: Int64, files: Int) {
         let fm = FileManager.default
         var bytes: Int64 = 0
         var files = 0
@@ -337,7 +337,7 @@ final class ArchiveManagerViewModel: ObservableObject {
     }
 
     /// 生成不冲突的归档目录名。
-    private static func uniqueArchiveName(for name: String, in directory: URL) -> String {
+    private nonisolated static func uniqueArchiveName(for name: String, in directory: URL) -> String {
         var candidate = name
         var counter = 1
         while FileManager.default.fileExists(atPath: directory.appendingPathComponent(candidate).path) {
@@ -444,19 +444,37 @@ final class ArchiveManagerViewModel: ObservableObject {
 // MARK: - View
 
 struct ArchiveManagerView: View {
-    @StateObject private var model = ArchiveManagerViewModel()
+    @EnvironmentObject private var appState: AppState
+    @ObservedObject var model: ArchiveManagerViewModel
     @State private var showArchiveConfirm = false
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: Spacing.xs) {
             toolbar
             summaryCards
             content
             statusBar
         }
-        .padding(18)
+        .padding(Spacing.sm)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.background)
+        .onAppear {
+            if let globalDir = appState.globalProjectDir, model.sourceURL != globalDir {
+                model.sourceURL = globalDir
+                model.scan()
+            }
+        }
+        .onChange(of: appState.globalProjectDir) { newDir in
+            if let newDir = newDir, model.sourceURL != newDir {
+                model.sourceURL = newDir
+                model.scan()
+            }
+        }
+        .onChange(of: model.sourceURL) { newSource in
+            if newSource != appState.globalProjectDir {
+                appState.globalProjectDir = newSource
+            }
+        }
         .confirmationDialog("确认归档所选素材？", isPresented: $showArchiveConfirm, titleVisibility: .visible) {
             Button("复制到归档目录", role: .destructive) {
                 model.performArchive()
@@ -486,60 +504,29 @@ struct ArchiveManagerView: View {
     // MARK: - 工具栏
 
     private var toolbar: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "archivebox")
-                .font(.system(size: 26))
-                .foregroundStyle(Theme.accent)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("素材库归档管理")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(Theme.textPrimary)
-                Text(model.sourceURL?.path ?? "选择包含 FCPX 资源库或媒体文件夹的源目录")
-                    .font(.system(size: 12))
-                    .foregroundStyle(Theme.textSecondary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-            }
-            Spacer()
-            toolbarButton("选择源目录", systemImage: "folder.badge.plus", isEnabled: !model.isBusy) {
-                model.chooseSourceDirectory()
-            }
-            toolbarButton("选择归档目录", systemImage: "archivebox", isEnabled: !model.isBusy) {
-                model.chooseArchiveDirectory()
-            }
-            toolbarButton("扫描", systemImage: "magnifyingglass", isEnabled: model.canScan) {
-                model.scan()
-            }
-            toolbarButton("归档所选", systemImage: "archivebox.fill", isEnabled: model.canArchive, isProminent: true) {
-                showArchiveConfirm = true
-            }
-        }
-    }
+        VStack(spacing: Spacing.xs) {
+            NeoSectionHeader(
+                systemImage: "archivebox",
+                title: "素材库归档管理",
+                subtitle: model.sourceURL?.path ?? "选择包含 FCPX 资源库或媒体文件夹的源目录"
+            )
 
-    private func toolbarButton(
-        _ title: String,
-        systemImage: String,
-        isEnabled: Bool,
-        isProminent: Bool = false,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Label(title, systemImage: systemImage)
-                .font(.system(size: 12, weight: .semibold))
-                .lineLimit(1)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(isProminent ? Theme.accent : Theme.panel)
-                .foregroundStyle(isProminent ? Color.white : Theme.accent)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .stroke(isProminent ? Theme.accent : Theme.line, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                .opacity(isEnabled ? 1 : 0.42)
+            HStack(spacing: Spacing.xs) {
+                NeoButton(title: "选择源目录", systemImage: "folder.badge.plus", isEnabled: !model.isBusy) {
+                    model.chooseSourceDirectory()
+                }
+                NeoButton(title: "选择归档目录", systemImage: "archivebox", isEnabled: !model.isBusy) {
+                    model.chooseArchiveDirectory()
+                }
+                NeoButton(title: "扫描", systemImage: "magnifyingglass", isEnabled: model.canScan) {
+                    model.scan()
+                }
+                NeoButton(title: "归档所选", systemImage: "archivebox.fill", style: .primary, isEnabled: model.canArchive) {
+                    showArchiveConfirm = true
+                }
+                Spacer()
+            }
         }
-        .buttonStyle(.plain)
-        .disabled(!isEnabled)
     }
 
     // MARK: - 统计卡片
@@ -556,12 +543,12 @@ struct ArchiveManagerView: View {
 
     private func summaryCard(_ title: String, _ value: String, _ color: Color) -> some View {
         Card {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: Spacing.xxxs) {
                 Text(title)
-                    .font(.system(size: 12))
+                    .font(FT.label(12))
                     .foregroundStyle(Theme.textSecondary)
                 Text(value)
-                    .font(.system(size: 24, weight: .bold))
+                    .font(FT.metric(24))
                     .foregroundStyle(color)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -587,21 +574,21 @@ struct ArchiveManagerView: View {
 
     private var itemList: some View {
         Card {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 HStack {
                     Text("可归档素材")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(FT.data(15, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     if !model.items.isEmpty {
                         Button("全选") { model.selectAll() }
                             .buttonStyle(.plain)
-                            .font(.system(size: 11))
+                            .font(FT.data(11))
                             .foregroundStyle(Theme.accent)
                             .disabled(model.isBusy)
                         Button("清除") { model.selectNone() }
                             .buttonStyle(.plain)
-                            .font(.system(size: 11))
+                            .font(FT.data(11))
                             .foregroundStyle(Theme.accent)
                             .disabled(model.isBusy)
                     }
@@ -627,15 +614,15 @@ struct ArchiveManagerView: View {
     }
 
     private var emptyHint: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.xxs) {
             Spacer()
             Image(systemName: "archivebox")
-                .font(.system(size: 34))
+                .font(FT.metric())
                 .foregroundStyle(Theme.textSecondary)
             Text("选择源目录并扫描")
                 .foregroundStyle(Theme.textSecondary)
             Text("扫描后将列出可归档的 .fcpbundle 和媒体文件夹。")
-                .font(.system(size: 12))
+                .font(FT.data(12))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
         }
@@ -655,18 +642,18 @@ struct ArchiveManagerView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.name)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(FT.data(13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                 Text("\(DisplayFormat.dateString(item.modifiedAt)) · \(item.fileCount) 个文件")
-                    .font(.system(size: 11))
+                    .font(FT.data(11))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
                 Text(DisplayFormat.byteString(item.totalBytes))
-                    .font(.system(size: 12))
+                    .font(FT.data(12))
                     .foregroundStyle(Theme.textPrimary)
                 statusBadge(item.status)
             }
@@ -675,23 +662,15 @@ struct ArchiveManagerView: View {
     }
 
     private func statusBadge(_ status: ArchiveStatus) -> some View {
-        let color = statusColor(status)
-        return Text(status.rawValue)
-            .font(.system(size: 10, weight: .semibold))
-            .padding(.horizontal, 6)
-            .padding(.vertical, 1)
-            .background(color.opacity(0.14))
-            .foregroundStyle(color)
-            .clipShape(Capsule())
-    }
-
-    private func statusColor(_ status: ArchiveStatus) -> Color {
-        switch status {
-        case .pending: return Theme.textSecondary
-        case .archiving, .restoring: return Theme.warning
-        case .archived: return Theme.safe
-        case .failed: return Theme.danger
-        }
+        let style: NeoBadge.Style = {
+            switch status {
+            case .pending: return .neutral
+            case .archiving, .restoring: return .warning
+            case .archived: return .safe
+            case .failed: return .danger
+            }
+        }()
+        return NeoBadge(text: status.rawValue, style: style)
     }
 
     // MARK: - 右侧：详情 + 历史
@@ -713,13 +692,13 @@ struct ArchiveManagerView: View {
                 if let item = model.selectedItem {
                     detailContent(item)
                 } else {
-                    VStack(spacing: 6) {
+                    VStack(spacing: Spacing.xxxs) {
                         Spacer()
                         Text("未选择素材")
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(FT.data(18, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                         Text("选择左侧列表中的素材查看详情")
-                            .font(.system(size: 12))
+                            .font(FT.data(12))
                             .foregroundStyle(Theme.textSecondary)
                         Spacer()
                     }
@@ -735,10 +714,10 @@ struct ArchiveManagerView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(item.name)
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(FT.data(18, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Text(item.url.path)
-                        .font(.system(size: 12))
+                        .font(FT.data(12))
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(1)
                         .truncationMode(.middle)
@@ -751,7 +730,7 @@ struct ArchiveManagerView: View {
                     Label("在 Finder 显示", systemImage: "folder")
                 }
                 .buttonStyle(.plain)
-                .font(.system(size: 12))
+                .font(FT.data(12))
                 .foregroundStyle(Theme.accent)
             }
 
@@ -765,10 +744,10 @@ struct ArchiveManagerView: View {
                 Divider()
                 VStack(alignment: .leading, spacing: 3) {
                     Text("归档位置")
-                        .font(.system(size: 11))
+                        .font(FT.data(11))
                         .foregroundStyle(Theme.textSecondary)
                     Text(archivePath)
-                        .font(.system(size: 12))
+                        .font(FT.data(12))
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(2)
                         .truncationMode(.middle)
@@ -780,10 +759,10 @@ struct ArchiveManagerView: View {
 
     private var historyCard: some View {
         Card {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 HStack {
                     Text("归档历史")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(FT.data(15, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     if let record = model.selectedRecord {
@@ -793,7 +772,7 @@ struct ArchiveManagerView: View {
                             Label("恢复", systemImage: "arrow.uturn.backward")
                         }
                         .buttonStyle(.plain)
-                        .font(.system(size: 12))
+                        .font(FT.data(12))
                         .foregroundStyle(Theme.accent)
                         .disabled(model.isBusy)
 
@@ -803,7 +782,7 @@ struct ArchiveManagerView: View {
                             Label("Finder", systemImage: "folder")
                         }
                         .buttonStyle(.plain)
-                        .font(.system(size: 12))
+                        .font(FT.data(12))
                         .foregroundStyle(Theme.accent)
 
                         Button {
@@ -812,20 +791,20 @@ struct ArchiveManagerView: View {
                             Label("删除", systemImage: "trash")
                         }
                         .buttonStyle(.plain)
-                        .font(.system(size: 12))
+                        .font(FT.data(12))
                         .foregroundStyle(Theme.danger)
                         .disabled(model.isBusy)
                     }
                 }
 
                 if model.archiveRecords.isEmpty {
-                    VStack(spacing: 6) {
+                    VStack(spacing: Spacing.xxxs) {
                         Spacer()
                         Image(systemName: "clock.arrow.circlepath")
-                            .font(.system(size: 28))
+                            .font(FT.metric())
                             .foregroundStyle(Theme.textSecondary)
                         Text("暂无归档记录")
-                            .font(.system(size: 12))
+                            .font(FT.data(12))
                             .foregroundStyle(Theme.textSecondary)
                         Spacer()
                     }
@@ -851,21 +830,21 @@ struct ArchiveManagerView: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(record.originalName)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(FT.data(13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                 Text("\(DisplayFormat.dateString(record.archivedAt)) · \(record.fileCount) 个文件")
-                    .font(.system(size: 11))
+                    .font(FT.data(11))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
                 Text(DisplayFormat.byteString(record.totalBytes))
-                    .font(.system(size: 12))
+                    .font(FT.data(12))
                     .foregroundStyle(Theme.textPrimary)
                 Text(record.archivePath)
-                    .font(.system(size: 10))
+                    .font(FT.data(10))
                     .foregroundStyle(Theme.textSecondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -878,10 +857,10 @@ struct ArchiveManagerView: View {
     private func statPair(_ title: String, _ value: String, _ color: Color) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(.system(size: 11))
+                .font(FT.label(11))
                 .foregroundStyle(Theme.textSecondary)
             Text(value)
-                .font(.system(size: 16, weight: .semibold))
+                .font(FT.data(16, weight: .semibold))
                 .foregroundStyle(color)
         }
     }
@@ -889,17 +868,16 @@ struct ArchiveManagerView: View {
     // MARK: - 状态栏
 
     private var statusBar: some View {
-        VStack(spacing: 6) {
-            ProgressView(value: model.progressValue)
-                .tint(Theme.accent)
+        VStack(spacing: Spacing.xxxs) {
+            NeoProgress(value: model.progressValue)
             HStack {
                 Text(model.statusText)
-                    .font(.system(size: 12))
+                    .font(FT.data(12))
                     .foregroundStyle(Theme.textSecondary)
                 Spacer()
                 if model.canArchive {
                     Text("已选 \(model.selectedIDs.count) 项 · \(DisplayFormat.byteString(model.selectedBytes))")
-                        .font(.system(size: 12))
+                        .font(FT.data(12))
                         .foregroundStyle(Theme.accent)
                 }
             }

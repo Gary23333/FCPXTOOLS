@@ -96,21 +96,21 @@ final class QuickAccessViewModel: ObservableObject {
 struct QuickAccessView: View {
     @StateObject private var model = QuickAccessViewModel()
 
-    private let columns = [GridItem(.adaptive(minimum: 300, maximum: 380), spacing: 12)]
+    private let columns = [GridItem(.adaptive(minimum: 300, maximum: 380), spacing: Spacing.xxs)]
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: Spacing.xs) {
             header
             ScrollView {
-                LazyVGrid(columns: columns, spacing: 12) {
+                LazyVGrid(columns: columns, spacing: Spacing.xxs) {
                     ForEach(model.entries) { entry in
                         entryCard(entry)
                     }
                 }
-                .padding(.bottom, 8)
+                .padding(.bottom, Spacing.xxs)
             }
         }
-        .padding(18)
+        .padding(Spacing.sm)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.background)
     }
@@ -118,40 +118,17 @@ struct QuickAccessView: View {
     // MARK: - 顶部标题
 
     private var header: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "bolt.horizontal.circle")
-                .font(.system(size: 26))
-                .foregroundStyle(Theme.accent)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("快捷打开")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(Theme.textPrimary)
-                Text("一键打开 FCPX 常用目录或启动应用。不存在的路径会显示为禁用状态。")
-                    .font(.system(size: 12))
-                    .foregroundStyle(Theme.textSecondary)
-            }
+        HStack(spacing: Spacing.xxs) {
+            NeoSectionHeader(
+                systemImage: "bolt.horizontal.circle",
+                title: "快捷打开",
+                subtitle: "一键打开 FCPX 常用目录或启动应用。不存在的路径会显示为禁用状态。"
+            )
             Spacer()
-            refreshButton
+            NeoButton(title: "刷新", systemImage: "arrow.clockwise", style: .secondary, size: .sm) {
+                model.refresh()
+            }
         }
-    }
-
-    private var refreshButton: some View {
-        Button {
-            model.refresh()
-        } label: {
-            Label("刷新", systemImage: "arrow.clockwise")
-                .font(.system(size: 12, weight: .semibold))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Theme.panel)
-                .foregroundStyle(Theme.accent)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .stroke(Theme.line, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-        }
-        .buttonStyle(.plain)
     }
 
     // MARK: - 入口卡片
@@ -159,70 +136,48 @@ struct QuickAccessView: View {
     private func entryCard(_ entry: QuickAccessEntry) -> some View {
         let exists = model.exists(entry)
         return Card {
-            HStack(alignment: .top, spacing: 12) {
+            HStack(alignment: .top, spacing: Spacing.xxs) {
                 Image(systemName: entry.icon)
-                    .font(.system(size: 22))
+                    .font(FT.title(22))
                     .foregroundStyle(exists ? Theme.accent : Theme.textSecondary)
                     .frame(width: 36, height: 36)
                     .background(exists ? Theme.accent.opacity(0.1) : Theme.background)
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .clipShape(Rectangle())
 
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
+                VStack(alignment: .leading, spacing: Spacing.xxxs) {
+                    HStack(spacing: Spacing.xxxs) {
                         Text(entry.name)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(FT.data(14))
                             .foregroundStyle(Theme.textPrimary)
                         if !exists {
-                            Text("不存在")
-                                .font(.system(size: 10, weight: .semibold))
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 1)
-                                .background(Theme.textSecondary.opacity(0.14))
-                                .foregroundStyle(Theme.textSecondary)
-                                .clipShape(Capsule())
+                            NeoBadge(text: "不存在", style: .neutral)
                         }
                     }
                     Text(entry.path)
-                        .font(.system(size: 11))
+                        .font(FT.label(11))
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(2)
                         .truncationMode(.middle)
                     if let highlight = entry.highlightFile {
                         Text("高亮：\(highlight)")
-                            .font(.system(size: 10))
+                            .font(FT.label(10))
                             .foregroundStyle(Theme.textSecondary)
                     }
                 }
-                Spacer(minLength: 4)
+                Spacer(minLength: Spacing.xxxs)
 
-                openButton(entry, exists: exists)
+                NeoButton(
+                    title: entry.isApplication ? "启动应用" : "在 Finder 中打开",
+                    systemImage: entry.isApplication ? "play.fill" : "folder",
+                    style: entry.isApplication ? .primary : .secondary,
+                    size: .sm,
+                    isEnabled: exists
+                ) {
+                    model.open(entry)
+                }
             }
-            .padding(12)
+            .padding(Spacing.xxs)
             .opacity(exists ? 1 : 0.6)
         }
-    }
-
-    private func openButton(_ entry: QuickAccessEntry, exists: Bool) -> some View {
-        let title = entry.isApplication ? "启动应用" : "在 Finder 中打开"
-        let icon = entry.isApplication ? "play.fill" : "folder"
-        return Button {
-            model.open(entry)
-        } label: {
-            Label(title, systemImage: icon)
-                .font(.system(size: 11, weight: .semibold))
-                .lineLimit(1)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(entry.isApplication ? Theme.accent : Theme.panel)
-                .foregroundStyle(entry.isApplication ? Color.white : Theme.accent)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .stroke(entry.isApplication ? Theme.accent : Theme.line, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                .opacity(exists ? 1 : 0.42)
-        }
-        .buttonStyle(.plain)
-        .disabled(!exists)
     }
 }

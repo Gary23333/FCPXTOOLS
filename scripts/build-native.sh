@@ -3,20 +3,28 @@ set -eu
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP_NAME="FCPX 工具箱"
-VERSION="0.3.1"
+VERSION="0.4.0"
 EXEC="FCPXToolbox"
 CONFIG="${1:-release}"
-OUT="$ROOT/dist/native-v0.3/$APP_NAME.app"
+OUT="$ROOT/dist/native-v0.4/$APP_NAME.app"
 
 # 用 Swift Package Manager 构建（替代旧的 swiftc 单目录编译）。
 ( cd "$ROOT/native" && swift build -c "$CONFIG" )
 BIN="$(cd "$ROOT/native" && swift build -c "$CONFIG" --show-bin-path)/$EXEC"
 
-mkdir -p "$ROOT/dist/native-v0.3"
+mkdir -p "$ROOT/dist/native-v0.4"
 rm -rf "$OUT"
 mkdir -p "$OUT/Contents/MacOS" "$OUT/Contents/Resources"
 
 cp "$BIN" "$OUT/Contents/MacOS/$EXEC"
+
+# 复制 SwiftPM 生成的资源包（字体、本地化字符串）。资源通过 Bundle.module 访问，
+# 该包必须随可执行文件一起进入 .app，否则 Geist Mono 字体与本地化会缺失。
+BIN_DIR="$(dirname "$BIN")"
+RES_BUNDLE="$BIN_DIR/FCPXToolbox_FCPXToolbox.bundle"
+if [ -d "$RES_BUNDLE" ]; then
+  cp -R "$RES_BUNDLE" "$OUT/Contents/Resources/"
+fi
 
 if [ -f "$ROOT/assets/AppIcon.icns" ]; then
   cp "$ROOT/assets/AppIcon.icns" "$OUT/Contents/Resources/AppIcon.icns"

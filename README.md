@@ -14,7 +14,6 @@
   <img alt="Platform" src="https://img.shields.io/badge/platform-macOS%2014%2B-0a7ea4">
   <img alt="Swift" src="https://img.shields.io/badge/Swift-5.9-f05138">
   <img alt="Version" src="https://img.shields.io/badge/version-v0.4.0-237063">
-  <img alt="Electron Prototype" src="https://img.shields.io/badge/Electron-prototype-47848f">
 </p>
 
 <p align="center">
@@ -84,7 +83,6 @@ flowchart LR
 | 📦 归档管理 | 素材库快速归档与恢复，归档历史持久化 |
 | 💬 快速字幕 | ASR 语音识别生成 SRT 字幕，支持多语言 |
 | 📤 输出管理 | 管理 FCPX 输出目标，预设模板快速创建 |
-| 🧪 Electron 原型 | 保留早期 JS/Electron 版本，方便对比和后续迁移 |
 
 ## ✅ 当前清理范围
 
@@ -125,7 +123,7 @@ scripts/build-native.sh
 构建后的 App 位于：
 
 ```text
-dist/native-v0.3/FCPX 工具箱.app
+dist/native-v0.4/FCPX 工具箱.app
 ```
 
 ### 打包本地安装包
@@ -137,17 +135,8 @@ scripts/package-local.sh
 输出：
 
 ```text
-dist/FCPXTools-0.3.0.zip
+dist/FCPXTools-0.4.0.zip
 ```
-
-### 运行 Electron 原型
-
-```bash
-npm install
-npm start
-```
-
-> Electron 版本是早期原型，当前主线以 `native/Sources/FCPXToolbox` 为准。
 
 ## 🗂️ 目录结构
 
@@ -168,8 +157,6 @@ npm start
 │       ├── DestinationManager/ # 输出管理模块
 │       └── Shared/          # 共享工具（格式化、文件操作）
 ├── scripts/                 # 图标生成、构建、打包脚本
-├── src/                     # Electron 原型
-├── package.json             # Electron 原型依赖与打包配置
 └── README.md
 ```
 
@@ -180,7 +167,7 @@ npm start
 - 📦 Swift Package Manager
 - 🗣️ Speech 框架（ASR 语音识别）
 - 🎵 AVFoundation（音频处理）
-- ⚙️ Electron 原型
+- 🔤 Geist Mono 等宽字体（21th 设计系统）
 - 🧼 macOS `FileManager.trashItem` 安全移入废纸篓
 
 ## ⚠️ 使用提醒

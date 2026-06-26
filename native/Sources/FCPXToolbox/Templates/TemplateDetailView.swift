@@ -7,20 +7,20 @@ struct TemplateDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                ThumbnailView(url: item.posterURL, maxPixel: 600)
+                ThumbnailView(url: item.posterURL, maxPixel: 600, isDarkBackground: item.category == .titles)
                     .frame(height: 150)
                     .frame(maxWidth: .infinity)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(Rectangle())
                     .overlay(
-                        RoundedRectangle(cornerRadius: 8).stroke(Theme.line, lineWidth: 1)
+                        Rectangle().stroke(Theme.border, lineWidth: ShapeToken.borderWidth)
                     )
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(item.displayName)
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(FT.data(17, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Text("\(item.category.displayName) · \(item.group)")
-                        .font(.system(size: 12))
+                        .font(FT.data(12))
                         .foregroundStyle(Theme.textSecondary)
                 }
 
@@ -34,26 +34,32 @@ struct TemplateDetailView: View {
                 infoRow("文件夹名", item.folderName)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("路径").font(.system(size: 11)).foregroundStyle(Theme.textSecondary)
+                    Text("路径").font(FT.data(11)).foregroundStyle(Theme.textSecondary)
                     Text(item.folderURL.path)
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(FT.data(11))
                         .foregroundStyle(Theme.textPrimary)
                         .textSelection(.enabled)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                Button {
+                NeoButton(
+                    title: "在 Finder 显示",
+                    systemImage: "folder",
+                    style: .secondary,
+                    size: .md
+                ) {
                     NSWorkspace.shared.activateFileViewerSelecting([item.folderURL])
-                } label: {
-                    Label("在 Finder 显示", systemImage: "folder")
                 }
                 .frame(maxWidth: .infinity)
 
                 if item.isWritable {
-                    Button(role: .destructive) {
+                    NeoButton(
+                        title: "删除模板",
+                        systemImage: "trash",
+                        style: .destructive,
+                        size: .md
+                    ) {
                         onDelete?(item)
-                    } label: {
-                        Label("删除模板", systemImage: "trash")
                     }
                     .frame(maxWidth: .infinity)
                 }
@@ -68,11 +74,11 @@ struct TemplateDetailView: View {
     private func infoRow(_ label: String, _ value: String) -> some View {
         HStack(alignment: .top) {
             Text(label)
-                .font(.system(size: 12))
+                .font(FT.data(12))
                 .foregroundStyle(Theme.textSecondary)
                 .frame(width: 76, alignment: .leading)
             Text(value)
-                .font(.system(size: 12))
+                .font(FT.data(12))
                 .foregroundStyle(Theme.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

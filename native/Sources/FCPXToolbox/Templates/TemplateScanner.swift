@@ -19,6 +19,14 @@ final class TemplateScanner {
     static let systemRoot = URL(fileURLWithPath:
         "/Library/Application Support/Final Cut Pro/Templates.localized", isDirectory: true)
 
+    private let customUserRoot: URL?
+    private let customSystemRoot: URL?
+
+    init(userRoot: URL? = nil, systemRoot: URL? = nil) {
+        self.customUserRoot = userRoot
+        self.customSystemRoot = systemRoot
+    }
+
     func cancel() { cancelled = true }
 
     func scan(progress: @escaping (TemplateScanProgress) -> Void,
@@ -36,8 +44,8 @@ final class TemplateScanner {
         }
 
         let roots: [(URL, TemplateRoot)] = [
-            (Self.userRoot, .user),
-            (Self.systemRoot, .system)
+            (customUserRoot ?? Self.userRoot, .user),
+            (customSystemRoot ?? Self.systemRoot, .system)
         ]
 
         for (root, source) in roots {
@@ -70,15 +78,22 @@ final class TemplateScanner {
     /// 递归查找包含 `.moti` 的文件夹；该文件夹即一个模板。
     private func walk(_ dir: URL, category: TemplateCategory, categoryDir: URL, root: TemplateRoot, found: (TemplateItem) -> Void) {
         guard !cancelled else { return }
-        let entries = contents(of: dir)
+        let keys: [URLResourceKey] = [.isDirectoryKey, .isSymbolicLinkKey, .localizedNameKey]
+        guard let entries = try? fm.contentsOfDirectory(at: dir, includingPropertiesForKeys: keys, options: [.skipsHiddenFiles]) else { return }
 
         if let doc = entries.first(where: { Self.templateExtensions.contains($0.pathExtension.lowercased()) }) {
             found(makeItem(folder: dir, moti: doc, category: category, categoryDir: categoryDir, root: root))
             return // 模板文件夹内部不再深挖（Media/ 等是其内容）
         }
 
-        for child in entries where isDirectory(child) && !isSymlink(child) {
-            walk(child, category: category, categoryDir: categoryDir, root: root, found: found)
+        for child in entries {
+            guard let rv = try? child.resourceValues(forKeys: Set(keys)) else { continue }
+            let isDir = rv.isDirectory == true
+            let isSym = rv.isSymbolicLink == true
+            
+            if isDir && !isSym {
+                walk(child, category: category, categoryDir: categoryDir, root: root, found: found)
+            }
         }
     }
 
@@ -121,27 +136,23 @@ final class TemplateScanner {
     private func measure(_ url: URL) -> (bytes: Int64, modifiedAt: Date?) {
         var bytes: Int64 = 0
         var latest: Date?
-        guard let e = fm.enumerator(at: url, includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey, .contentModificationDateKey], options: [.skipsHiddenFiles]) else {
+        let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey, .contentModificationDateKey]
+        guard let contents = try? fm.contentsOfDirectory(at: url, includingPropertiesForKeys: keys, options: [.skipsHiddenFiles]) else {
             return (0, nil)
         }
-        for case let f as URL in e {
-            let v = try? f.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey, .contentModificationDateKey])
-            guard v?.isRegularFile == true else { continue }
-            bytes += Int64(v?.fileSize ?? 0)
-            if let m = v?.contentModificationDate, latest == nil || m > latest! { latest = m }
+        for file in contents {
+            guard let v = try? file.resourceValues(forKeys: Set(keys)) else { continue }
+            if v.isRegularFile == true {
+                bytes += Int64(v.fileSize ?? 0)
+            }
+            if let m = v.contentModificationDate {
+                if latest == nil || m > latest! { latest = m }
+            }
         }
         return (bytes, latest)
     }
 
-    private func contents(of url: URL) -> [URL] {
-        (try? fm.contentsOfDirectory(at: url, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey], options: [.skipsHiddenFiles])) ?? []
-    }
-
     private func isDirectory(_ url: URL) -> Bool {
         (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
-    }
-
-    private func isSymlink(_ url: URL) -> Bool {
-        (try? url.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink) == true
     }
 }

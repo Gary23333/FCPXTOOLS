@@ -1,20 +1,38 @@
 import SwiftUI
 
 struct CleanupView: View {
+    @EnvironmentObject private var appState: AppState
     @ObservedObject var model: CleanupViewModel
     @State private var showCleanConfirm = false
     @State private var showResult = false
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: Spacing.xs) {
             toolbar
             summaryCards
             content
             statusBar
         }
-        .padding(18)
+        .padding(Spacing.sm)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.background)
+        .onAppear {
+            if let globalDir = appState.globalProjectDir, model.rootURL != globalDir {
+                model.rootURL = globalDir
+                model.rescan()
+            }
+        }
+        .onChange(of: appState.globalProjectDir) { newDir in
+            if let newDir = newDir, model.rootURL != newDir {
+                model.rootURL = newDir
+                model.rescan()
+            }
+        }
+        .onChange(of: model.rootURL) { newRoot in
+            if newRoot != appState.globalProjectDir {
+                appState.globalProjectDir = newRoot
+            }
+        }
         .confirmationDialog("确认清理所选缓存？", isPresented: $showCleanConfirm, titleVisibility: .visible) {
             Button("移到废纸篓", role: .destructive) {
                 model.performClean()
@@ -37,69 +55,37 @@ struct CleanupView: View {
     // MARK: - 工具栏
 
     private var toolbar: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 26))
-                .foregroundStyle(Theme.accent)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("FCPX 清理助手")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(Theme.textPrimary)
-                Text(model.rootURL?.path ?? "选择包含 Final Cut Pro 资源库的目录开始扫描")
-                    .font(.system(size: 12))
-                    .foregroundStyle(Theme.textSecondary)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-            }
-            Spacer()
-            toolbarButton("选择目录", systemImage: "folder.badge.plus", isEnabled: !model.isBusy) {
-                model.chooseDirectory()
-            }
-            toolbarButton("重新扫描", systemImage: "arrow.clockwise", isEnabled: model.canRescan) {
-                model.rescan()
-            }
-            toolbarButton("停止", systemImage: "stop.circle", isEnabled: model.phase == .scanning) {
-                model.stopScan()
-            }
-            toolbarButton("选择安全项", systemImage: "checkmark.square", isEnabled: model.canSelectSafe) {
-                model.selectAllSafe()
-            }
-            toolbarButton("清理所选", systemImage: "trash", isEnabled: model.canClean, isProminent: true) {
-                showCleanConfirm = true
-            }
-        }
-    }
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            NeoSectionHeader(
+                systemImage: "sparkles",
+                title: "FCPX 清理助手",
+                subtitle: model.rootURL?.path ?? "选择包含 Final Cut Pro 资源库的目录开始扫描"
+            )
 
-    private func toolbarButton(
-        _ title: String,
-        systemImage: String,
-        isEnabled: Bool,
-        isProminent: Bool = false,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Label(title, systemImage: systemImage)
-                .font(.system(size: 12, weight: .semibold))
-                .lineLimit(1)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(isProminent ? Theme.accent : Theme.panel)
-                .foregroundStyle(isProminent ? Color.white : Theme.accent)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .stroke(isProminent ? Theme.accent : Theme.line, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                .opacity(isEnabled ? 1 : 0.42)
+            HStack(spacing: Spacing.xxs) {
+                NeoButton(title: "选择目录", systemImage: "folder.badge.plus", style: .secondary, size: .sm, isEnabled: !model.isBusy) {
+                    model.chooseDirectory()
+                }
+                NeoButton(title: "重新扫描", systemImage: "arrow.clockwise", style: .secondary, size: .sm, isEnabled: model.canRescan) {
+                    model.rescan()
+                }
+                NeoButton(title: "停止", systemImage: "stop.circle", style: .secondary, size: .sm, isEnabled: model.phase == .scanning) {
+                    model.stopScan()
+                }
+                NeoButton(title: "选择安全项", systemImage: "checkmark.square", style: .secondary, size: .sm, isEnabled: model.canSelectSafe) {
+                    model.selectAllSafe()
+                }
+                NeoButton(title: "清理所选", systemImage: "trash", style: .primary, size: .sm, isEnabled: model.canClean) {
+                    showCleanConfirm = true
+                }
+            }
         }
-        .buttonStyle(.plain)
-        .disabled(!isEnabled)
     }
 
     // MARK: - 统计卡片
 
     private var summaryCards: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Spacing.xxs) {
             summaryCard("项目总占用", DisplayFormat.byteString(model.totalBytes), Theme.textPrimary)
             summaryCard("可清理空间", DisplayFormat.byteString(model.cleanableBytes), Theme.accent)
             summaryCard("已选清理", DisplayFormat.byteString(model.selectedBytes), Theme.textPrimary)
@@ -110,24 +96,24 @@ struct CleanupView: View {
 
     private func summaryCard(_ title: String, _ value: String, _ color: Color) -> some View {
         Card {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(title)
-                    .font(.system(size: 12))
+                    .font(FT.label())
                     .foregroundStyle(Theme.textSecondary)
                 Text(value)
-                    .font(.system(size: 24, weight: .bold))
+                    .font(FT.metric())
                     .foregroundStyle(color)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 12)
-            .padding(.horizontal, 14)
+            .padding(.vertical, Spacing.xs)
+            .padding(.horizontal, Spacing.xs)
         }
     }
 
     // MARK: - 主区：列表 + 详情
 
     private var content: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Spacing.xxs) {
             projectList
                 .frame(maxWidth: .infinity)
                 .frame(minWidth: 320)
@@ -141,9 +127,9 @@ struct CleanupView: View {
 
     private var projectList: some View {
         Card {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text("资源库 / 项目")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(FT.data(15, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 if model.projects.isEmpty {
                     emptyHint
@@ -160,7 +146,7 @@ struct CleanupView: View {
                             HStack {
                                 Spacer()
                                 Text("已显示 \(model.visibleProjects.count) / \(model.projects.count)")
-                                    .font(.system(size: 11))
+                                    .font(FT.data(11))
                                     .foregroundStyle(Theme.textSecondary)
                                 Spacer()
                             }
@@ -170,20 +156,20 @@ struct CleanupView: View {
                     .scrollContentBackground(.hidden)
                 }
             }
-            .padding(12)
+            .padding(Spacing.xs)
         }
     }
 
     private var emptyHint: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: Spacing.xxs) {
             Spacer()
             Image(systemName: "folder.badge.questionmark")
-                .font(.system(size: 34))
+                .font(FT.metric())
                 .foregroundStyle(Theme.textSecondary)
             Text("选择 Final Cut Pro 资源库所在目录")
                 .foregroundStyle(Theme.textSecondary)
             Text("扫描后可查看每个资源库的总占用和可清理缓存。")
-                .font(.system(size: 12))
+                .font(FT.label())
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
         }
@@ -191,7 +177,7 @@ struct CleanupView: View {
     }
 
     private func projectRow(_ project: ResourceItem) -> some View {
-        HStack(spacing: 10) {
+        HStack(spacing: Spacing.xxs) {
             Button {
                 model.toggleProject(project)
             } label: {
@@ -201,27 +187,27 @@ struct CleanupView: View {
             .buttonStyle(.plain)
             .disabled(project.cleanableBytes == 0)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Spacing.xxxs) {
                 Text(project.name)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(FT.data(13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                 Text("\(project.kind.rawValue) · \(DisplayFormat.dateString(project.modifiedAt))")
-                    .font(.system(size: 11))
+                    .font(FT.data(11))
                     .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
-            VStack(alignment: .trailing, spacing: 2) {
+            VStack(alignment: .trailing, spacing: Spacing.xxxs) {
                 Text(DisplayFormat.byteString(project.totalBytes))
-                    .font(.system(size: 12))
+                    .font(FT.data())
                     .foregroundStyle(Theme.textPrimary)
                 Text("可清理 \(DisplayFormat.byteString(project.cleanableBytes))")
-                    .font(.system(size: 11))
+                    .font(FT.data(11))
                     .foregroundStyle(Theme.accent)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Spacing.xxxs)
     }
 
     private var detailPanel: some View {
@@ -230,29 +216,29 @@ struct CleanupView: View {
                 if let project = model.selectedProject {
                     detailContent(project)
                 } else {
-                    VStack(spacing: 6) {
+                    VStack(spacing: Spacing.xxs) {
                         Spacer()
-                        Text("未选择项目").font(.system(size: 18, weight: .semibold))
+                        Text("未选择项目").font(FT.title(18, weight: .semibold))
                             .foregroundStyle(Theme.textPrimary)
                         Text("扫描后选择一个资源库查看详情")
-                            .font(.system(size: 12)).foregroundStyle(Theme.textSecondary)
+                            .font(FT.label()).foregroundStyle(Theme.textSecondary)
                         Spacer()
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            .padding(14)
+            .padding(Spacing.xs)
         }
     }
 
     private func detailContent(_ project: ResourceItem) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
             HStack {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(project.name).font(.system(size: 18, weight: .semibold))
+                VStack(alignment: .leading, spacing: Spacing.xxxs) {
+                    Text(project.name).font(FT.title(18, weight: .semibold))
                         .foregroundStyle(Theme.textPrimary)
                     Text("\(project.kind.rawValue) · \(project.url.path)")
-                        .font(.system(size: 12)).foregroundStyle(Theme.textSecondary)
+                        .font(FT.label()).foregroundStyle(Theme.textSecondary)
                         .lineLimit(1).truncationMode(.middle)
                 }
                 Spacer()
@@ -261,7 +247,7 @@ struct CleanupView: View {
                 }
             }
 
-            HStack(spacing: 18) {
+            HStack(spacing: Spacing.md) {
                 statPair("总占用", DisplayFormat.byteString(project.totalBytes), Theme.textPrimary)
                 statPair("可清理", DisplayFormat.byteString(project.cleanableBytes), Theme.accent)
                 statPair("已选", DisplayFormat.byteString(project.selectedBytes), Theme.textPrimary)
@@ -269,11 +255,11 @@ struct CleanupView: View {
             }
 
             Divider()
-            Text("可清理项").font(.system(size: 14, weight: .semibold))
+            Text("可清理项").font(FT.data(14, weight: .semibold))
                 .foregroundStyle(Theme.textPrimary)
 
             ScrollView {
-                VStack(spacing: 6) {
+                VStack(spacing: Spacing.xxs) {
                     ForEach(project.cacheGroups) { group in
                         cacheRow(group)
                     }
@@ -285,14 +271,14 @@ struct CleanupView: View {
     }
 
     private func statPair(_ title: String, _ value: String, _ color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.system(size: 11)).foregroundStyle(Theme.textSecondary)
-            Text(value).font(.system(size: 16, weight: .semibold)).foregroundStyle(color)
+        VStack(alignment: .leading, spacing: Spacing.xxxs) {
+            Text(title).font(FT.data(11)).foregroundStyle(Theme.textSecondary)
+            Text(value).font(FT.data(16, weight: .semibold)).foregroundStyle(color)
         }
     }
 
     private func cacheRow(_ group: CacheGroup) -> some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: Spacing.xxs) {
             Button {
                 model.toggleGroup(group)
             } label: {
@@ -302,46 +288,42 @@ struct CleanupView: View {
             .buttonStyle(.plain)
             .disabled(!group.canClean)
 
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text(group.title).font(.system(size: 13, weight: .medium))
+            VStack(alignment: .leading, spacing: Spacing.xxxs) {
+                HStack(spacing: Spacing.xxxs) {
+                    Text(group.title).font(FT.data(13, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
-                    Text(group.risk.rawValue)
-                        .font(.system(size: 10, weight: .semibold))
-                        .padding(.horizontal, 6).padding(.vertical, 1)
-                        .background(Theme.riskColor(group.risk).opacity(0.14))
-                        .foregroundStyle(Theme.riskColor(group.risk))
-                        .clipShape(Capsule())
+                    NeoBadge(
+                        text: group.risk.rawValue,
+                        style: group.risk == .safe ? .safe : group.risk == .confirm ? .warning : .neutral
+                    )
                 }
                 Text(group.explanation)
-                    .font(.system(size: 11)).foregroundStyle(Theme.textSecondary)
+                    .font(FT.data(11)).foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
-            VStack(alignment: .trailing, spacing: 2) {
+            VStack(alignment: .trailing, spacing: Spacing.xxxs) {
                 Text(DisplayFormat.byteString(group.bytes))
-                    .font(.system(size: 13)).foregroundStyle(Theme.textPrimary)
+                    .font(FT.data(13)).foregroundStyle(Theme.textPrimary)
                 Text("\(group.fileCount) 个文件")
-                    .font(.system(size: 11)).foregroundStyle(Theme.textSecondary)
+                    .font(FT.data(11)).foregroundStyle(Theme.textSecondary)
             }
         }
-        .padding(10)
+        .padding(Spacing.xxs)
         .background(Theme.background)
-        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
     }
 
     // MARK: - 状态栏
 
     private var statusBar: some View {
-        VStack(spacing: 6) {
-            ProgressView(value: model.progressValue)
-                .tint(Theme.accent)
+        VStack(spacing: Spacing.xxs) {
+            NeoProgress(value: model.progressValue)
             HStack {
                 Text(model.statusText)
-                    .font(.system(size: 12)).foregroundStyle(Theme.textSecondary)
+                    .font(FT.label()).foregroundStyle(Theme.textSecondary)
                 Spacer()
                 Text(model.progressText)
-                    .font(.system(size: 12)).foregroundStyle(Theme.textSecondary)
+                    .font(FT.label()).foregroundStyle(Theme.textSecondary)
             }
         }
     }

@@ -106,19 +106,114 @@ final class ProcessManagerViewModel: ObservableObject {
 }
 
 struct ProcessManagerView: View {
-    @StateObject private var model = ProcessManagerViewModel()
+    @ObservedObject var model: ProcessManagerViewModel
 
     var body: some View {
-        VStack(spacing: 14) {
-            header
-            statusCard
-            actionsCard
-            Spacer()
-            statusBar
+        VStack(spacing: Spacing.xs) {
+            HStack(spacing: Spacing.xxs) {
+                NeoSectionHeader(
+                    systemImage: "activity",
+                    title: "FCPX 进程管理"
+                )
+
+                NeoButton(
+                    title: "",
+                    systemImage: "arrow.clockwise",
+                    style: .ghost,
+                    size: .sm
+                ) {
+                    model.refresh()
+                }
+            }
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: Spacing.xxxs) {
+                HStack {
+                    Text("运行状态:")
+                        .foregroundStyle(Theme.textSecondary)
+                    Text(model.isRunning ? "运行中" : "未运行")
+                        .fontWeight(.bold)
+                        .foregroundStyle(model.isRunning ? Theme.safe : Theme.textSecondary)
+                    Spacer()
+                    if model.isRunning {
+                        Text("PID: \(model.pid)")
+                            .font(FT.data())
+                            .padding(.horizontal, Spacing.xxxs)
+                            .padding(.vertical, 1)
+                            .background(Theme.background)
+                    }
+                }
+
+                if model.isRunning {
+                    HStack {
+                        Text("内存占用:")
+                            .foregroundStyle(Theme.textSecondary)
+                        Text(DisplayFormat.byteString(model.residentBytes))
+                            .fontWeight(.semibold)
+                    }
+                    HStack {
+                        Text("更新时间:")
+                            .foregroundStyle(Theme.textSecondary)
+                        Text(DisplayFormat.dateString(model.lastUpdated))
+                    }
+                }
+            }
+            .font(FT.label())
+
+            Divider()
+
+            VStack(spacing: Spacing.xxs) {
+                if !model.isRunning {
+                    NeoButton(
+                        title: "启动 Final Cut Pro",
+                        systemImage: "play.fill",
+                        style: .primary,
+                        size: .md
+                    ) {
+                        model.launch()
+                    }
+                } else {
+                    HStack(spacing: Spacing.xxs) {
+                        NeoButton(
+                            title: "退出",
+                            systemImage: "xmark.circle",
+                            style: .secondary,
+                            size: .md
+                        ) {
+                            model.terminate()
+                        }
+
+                        NeoButton(
+                            title: "强制退出",
+                            systemImage: "exclamationmark.triangle",
+                            style: .destructive,
+                            size: .md
+                        ) {
+                            model.forceTerminate()
+                        }
+                    }
+                }
+
+                NeoButton(
+                    title: "清除渲染缓存",
+                    systemImage: "trash",
+                    style: .secondary,
+                    size: .md
+                ) {
+                    model.clearCache()
+                }
+            }
+
+            Text(model.statusMessage)
+                .font(FT.label(10))
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, Spacing.xxxs)
         }
-        .padding(18)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.background)
+        .padding(Spacing.sm)
+        .background(Theme.panel)
         .alert("进程操作失败", isPresented: errorBinding) {
             Button("好", role: .cancel) { model.errorMessage = nil }
         } message: {
@@ -131,163 +226,5 @@ struct ProcessManagerView: View {
             get: { model.errorMessage != nil },
             set: { if !$0 { model.errorMessage = nil } }
         )
-    }
-
-    // MARK: - 顶部标题
-
-    private var header: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "activity")
-                .font(.system(size: 26))
-                .foregroundStyle(Theme.accent)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("FCPX 进程管理")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(Theme.textPrimary)
-                Text("监控 Final Cut Pro 运行状态，支持启动、退出与强制退出，每 2 秒自动刷新。")
-                    .font(.system(size: 12))
-                    .foregroundStyle(Theme.textSecondary)
-            }
-            Spacer()
-        }
-    }
-
-    // MARK: - 状态卡片
-
-    private var statusCard: some View {
-        Card {
-            VStack(alignment: .leading, spacing: 14) {
-                HStack(spacing: 12) {
-                    statusIndicator
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(model.isRunning ? "运行中" : "未运行")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundStyle(model.isRunning ? Theme.safe : Theme.textSecondary)
-                        Text(model.isRunning ? "Final Cut Pro 正在运行" : "Final Cut Pro 未启动")
-                            .font(.system(size: 12))
-                            .foregroundStyle(Theme.textSecondary)
-                    }
-                    Spacer()
-                }
-
-                Divider()
-
-                HStack(spacing: 24) {
-                    statPair("进程 PID", model.isRunning ? "\(model.pid)" : "—", Theme.textPrimary)
-                    statPair("内存占用", model.isRunning ? DisplayFormat.byteString(model.residentBytes) : "—", Theme.textPrimary)
-                    statPair("刷新时间", DisplayFormat.dateString(model.lastUpdated), Theme.textSecondary)
-                }
-            }
-            .padding(16)
-        }
-    }
-
-    private var statusIndicator: some View {
-        ZStack {
-            Circle()
-                .fill((model.isRunning ? Theme.safe : Theme.textSecondary).opacity(0.16))
-                .frame(width: 48, height: 48)
-            Image(systemName: model.isRunning ? "checkmark.circle.fill" : "moon.zzz")
-                .font(.system(size: 24))
-                .foregroundStyle(model.isRunning ? Theme.safe : Theme.textSecondary)
-        }
-    }
-
-    private func statPair(_ title: String, _ value: String, _ color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(title)
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.textSecondary)
-            Text(value)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(color)
-        }
-    }
-
-    // MARK: - 操作卡片
-
-    private var actionsCard: some View {
-        Card {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("进程操作")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Theme.textPrimary)
-
-                HStack(spacing: 10) {
-                    actionButton("启动 Final Cut Pro", systemImage: "play.fill",
-                                 color: Theme.safe, isEnabled: !model.isRunning) {
-                        model.launch()
-                    }
-                    actionButton("退出 Final Cut Pro", systemImage: "xmark.circle",
-                                 color: Theme.warning, isEnabled: model.isRunning) {
-                        model.terminate()
-                    }
-                    actionButton("强制退出", systemImage: "exclamationmark.triangle",
-                                 color: Theme.danger, isEnabled: model.isRunning) {
-                        model.forceTerminate()
-                    }
-                }
-
-                Divider()
-
-                HStack(spacing: 10) {
-                    actionButton("清除渲染缓存", systemImage: "trash",
-                                 color: Theme.accent, isEnabled: true) {
-                        model.clearCache()
-                    }
-                    Spacer()
-                    Button {
-                        model.refresh()
-                    } label: {
-                        Label("立即刷新", systemImage: "arrow.clockwise")
-                            .font(.system(size: 12, weight: .semibold))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(Theme.panel)
-                            .foregroundStyle(Theme.accent)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                    .stroke(Theme.line, lineWidth: 1)
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(16)
-        }
-    }
-
-    private func actionButton(_ title: String, systemImage: String, color: Color, isEnabled: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Label(title, systemImage: systemImage)
-                .font(.system(size: 12, weight: .semibold))
-                .lineLimit(1)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(color)
-                .foregroundStyle(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                .opacity(isEnabled ? 1 : 0.42)
-        }
-        .buttonStyle(.plain)
-        .disabled(!isEnabled)
-    }
-
-    // MARK: - 状态栏
-
-    private var statusBar: some View {
-        HStack {
-            Circle()
-                .fill(Theme.accent)
-                .frame(width: 6, height: 6)
-            Text(model.statusMessage)
-                .font(.system(size: 12))
-                .foregroundStyle(Theme.textSecondary)
-            Spacer()
-            Text("每 2 秒自动刷新")
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.textSecondary)
-        }
     }
 }

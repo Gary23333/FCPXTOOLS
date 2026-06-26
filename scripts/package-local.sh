@@ -4,9 +4,9 @@ set -eu
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP_NAME="FCPX 工具箱"
 NATIVE_APP_NAME="FCPX 工具箱"
-VERSION="0.3.1"
+VERSION="0.4.0"
 PAYLOAD="$HOME/Library/Application Support/FCPX Tools/FCPXToolboxPayload.app"
-SOURCE_APP="$ROOT/dist/native-v0.3/$NATIVE_APP_NAME.app"
+SOURCE_APP="$ROOT/dist/native-v0.4/$NATIVE_APP_NAME.app"
 LAUNCHER="/Applications/$APP_NAME.app"
 PACKAGE_DIR="$ROOT/dist/FCPXTools-$VERSION"
 

@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct TemplateLibraryView: View {
-    @StateObject private var model = TemplateLibraryViewModel()
+    @ObservedObject var model: TemplateLibraryViewModel
     @State private var itemPendingDelete: TemplateItem?
 
-    private let columns = [GridItem(.adaptive(minimum: 168, maximum: 220), spacing: 14)]
+    private let columns = [GridItem(.adaptive(minimum: 168), spacing: 14)]
 
     var body: some View {
         HStack(spacing: 0) {
@@ -50,7 +50,7 @@ struct TemplateLibraryView: View {
     private var categoryRail: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("模板分类")
-                .font(.system(size: 12, weight: .semibold))
+                .font(FT.label(12, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
                 .padding(.horizontal, 12).padding(.top, 12)
             Button {
@@ -61,12 +61,11 @@ struct TemplateLibraryView: View {
                         .foregroundStyle(model.selectedCategory == nil ? Theme.accent : Theme.textPrimary)
                     Spacer()
                     Text("\(model.allCount)")
-                        .font(.system(size: 11))
+                        .font(FT.data(11))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 .padding(.horizontal, 10).padding(.vertical, 7)
                 .background(model.selectedCategory == nil ? Theme.accent.opacity(0.12) : .clear)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
             }
             .buttonStyle(.plain)
             .padding(.horizontal, 8)
@@ -80,12 +79,11 @@ struct TemplateLibraryView: View {
                             .foregroundStyle(model.selectedCategory == cat ? Theme.accent : Theme.textPrimary)
                         Spacer()
                         Text("\(model.count(cat))")
-                            .font(.system(size: 11))
+                            .font(FT.data(11))
                             .foregroundStyle(Theme.textSecondary)
                     }
                     .padding(.horizontal, 10).padding(.vertical, 7)
                     .background(model.selectedCategory == cat ? Theme.accent.opacity(0.12) : .clear)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal, 8)
@@ -110,12 +108,10 @@ struct TemplateLibraryView: View {
         VStack(spacing: 0) {
             VStack(spacing: 8) {
                 HStack(spacing: 10) {
-                    Image(systemName: "magnifyingglass").foregroundStyle(Theme.textSecondary)
-                    TextField("搜索模板名 / 厂商…", text: $model.searchText)
-                        .textFieldStyle(.plain)
+                    NeoInput(placeholder: "搜索模板名 / 厂商…", text: $model.searchText, isSearch: true)
                     Spacer()
                     Text(model.statusText)
-                        .font(.system(size: 11))
+                        .font(FT.data(11))
                         .foregroundStyle(Theme.textSecondary)
                         .lineLimit(1)
                 }
@@ -147,48 +143,43 @@ struct TemplateLibraryView: View {
     private func card(_ item: TemplateItem) -> some View {
         let selected = model.selectedItemID == item.id
         return VStack(alignment: .leading, spacing: 6) {
-            ThumbnailView(url: item.posterURL)
+            ThumbnailView(url: item.posterURL, isDarkBackground: item.category == .titles)
                 .frame(height: 104)
                 .frame(maxWidth: .infinity)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .clipShape(Rectangle())
                 .overlay(alignment: .topTrailing) {
                     HStack(spacing: 4) {
                         if item.isWritable {
                             deleteButton(item)
                         }
-                        Text(item.root.rawValue)
-                            .font(.system(size: 9, weight: .semibold))
-                            .padding(.horizontal, 5).padding(.vertical, 1)
-                            .background(.black.opacity(0.55))
-                            .foregroundStyle(.white)
-                            .clipShape(Capsule())
+                        NeoBadge(text: item.root.rawValue, style: .neutral)
                     }
                     .padding(5)
                 }
             Text(item.displayName)
-                .font(.system(size: 12, weight: .medium))
+                .font(FT.data(12, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1).truncationMode(.middle)
             Text(item.group)
-                .font(.system(size: 10))
+                .font(FT.data(10))
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(1)
             HStack(spacing: 6) {
                 Text(DisplayFormat.byteString(item.bytes))
                 Text(DisplayFormat.dateString(item.modifiedAt))
             }
-            .font(.system(size: 9))
+            .font(FT.data(9))
             .foregroundStyle(Theme.textSecondary)
             .lineLimit(1)
         }
         .padding(8)
         .background(Theme.panel)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(Rectangle())
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(selected ? Theme.accent : Theme.line, lineWidth: selected ? 2 : 1)
+            Rectangle()
+                .stroke(selected ? Theme.accent : Theme.border, lineWidth: selected ? 2 : ShapeToken.borderWidth)
         )
-        .contentShape(RoundedRectangle(cornerRadius: 8))
+        .contentShape(Rectangle())
         .onTapGesture {
             model.selectedItemID = item.id
         }
@@ -220,10 +211,10 @@ struct TemplateLibraryView: View {
 
             Spacer()
             Text("显示 \(model.filteredItems.count) 项")
-                .font(.system(size: 11))
+                .font(FT.data(11))
                 .foregroundStyle(Theme.textSecondary)
         }
-        .font(.system(size: 11))
+        .font(FT.data(11))
     }
 
     private var groupMenu: some View {
@@ -280,25 +271,24 @@ struct TemplateLibraryView: View {
                 .truncationMode(.tail)
             Spacer(minLength: 2)
             Image(systemName: "chevron.down")
-                .font(.system(size: 9, weight: .semibold))
+                .font(FT.data(9, weight: .semibold))
                 .foregroundStyle(Theme.textSecondary)
         }
-        .font(.system(size: 11, weight: .medium))
+        .font(FT.data(11, weight: .medium))
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.panel)
         .overlay(
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .stroke(Theme.line, lineWidth: 1)
+            Rectangle()
+                .stroke(Theme.border, lineWidth: ShapeToken.borderWidth)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
     }
 
     private var paginationBar: some View {
         HStack(spacing: 10) {
             Text("每页 \(model.pageSize) 项")
-                .font(.system(size: 11))
+                .font(FT.data(11))
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
             pagerButton("首页", systemImage: "backward.end.fill", enabled: model.canGoPreviousPage) {
@@ -308,7 +298,7 @@ struct TemplateLibraryView: View {
                 model.goToPreviousPage()
             }
             Text("第 \(model.currentPage) / \(model.totalPages) 页 · \(model.pageRangeText)")
-                .font(.system(size: 11, weight: .medium))
+                .font(FT.data(11, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
                 .frame(minWidth: 150)
             pagerButton("下一页", systemImage: "chevron.right", enabled: model.canGoNextPage) {
@@ -331,10 +321,9 @@ struct TemplateLibraryView: View {
                 .foregroundStyle(enabled ? Theme.accent : Theme.textSecondary)
                 .background(Theme.panel)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .stroke(Theme.line, lineWidth: 1)
+                    Rectangle()
+                        .stroke(Theme.border, lineWidth: ShapeToken.borderWidth)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 .opacity(enabled ? 1 : 0.42)
         }
         .buttonStyle(.plain)
@@ -347,11 +336,11 @@ struct TemplateLibraryView: View {
             itemPendingDelete = item
         } label: {
             Image(systemName: "trash")
-                .font(.system(size: 10, weight: .semibold))
+                .font(FT.data(10, weight: .semibold))
                 .frame(width: 20, height: 18)
                 .background(Theme.danger.opacity(0.9))
                 .foregroundStyle(.white)
-                .clipShape(Capsule())
+                .clipShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -374,7 +363,7 @@ struct TemplateLibraryView: View {
         VStack(spacing: 10) {
             Spacer()
             ProgressView().controlSize(.large)
-            Text(model.statusText).font(.system(size: 12)).foregroundStyle(Theme.textSecondary)
+            Text(model.statusText).font(FT.data(12)).foregroundStyle(Theme.textSecondary)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -384,7 +373,7 @@ struct TemplateLibraryView: View {
         VStack(spacing: 8) {
             Spacer()
             Image(systemName: "square.grid.2x2")
-                .font(.system(size: 34)).foregroundStyle(Theme.textSecondary)
+                .font(FT.data(34)).foregroundStyle(Theme.textSecondary)
             Text(model.searchText.isEmpty ? "没有符合筛选条件的模板" : "没有匹配「\(model.searchText)」的模板")
                 .foregroundStyle(Theme.textSecondary)
             Spacer()
