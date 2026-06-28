@@ -151,10 +151,10 @@ enum FontFamily {
 /// 应用元信息，统一从 Info.plist 读取，避免版本号在多处硬编码。
 enum AppInfo {
     static var version: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.5.0"
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.6.0"
     }
 
-    /// 带 "V" 前缀的展示版本，如 "V0.5.0"。
+    /// 带 "V" 前缀的展示版本，如 "V0.6.0"。
     static var displayVersion: String { "V\(version)" }
 }
 

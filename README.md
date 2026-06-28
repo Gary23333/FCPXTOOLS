@@ -8,8 +8,8 @@
 基于 SwiftUI 构建 · 10 大模块 · 本地运行 · 安全清理 · 一键字幕
 
 <p>
-  <a href="https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.5.0">
-    <img alt="Download" src="https://img.shields.io/badge/⬇️_下载-v0.5.0-FF6B6B?style=for-the-badge&logo=apple&logoColor=white">
+  <a href="https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.6.0">
+    <img alt="Download" src="https://img.shields.io/badge/⬇️_下载-v0.6.0-FF6B6B?style=for-the-badge&logo=apple&logoColor=white">
   </a>
   <a href="./docs/index.html">
     <img alt="Homepage" src="https://img.shields.io/badge/🏠_产品主页-在线预览-4ECDC4?style=for-the-badge">
@@ -21,7 +21,7 @@
   <img alt="Platform" src="https://img.shields.io/badge/macOS-14%2B-0040FF?style=flat-square">
   <img alt="Swift" src="https://img.shields.io/badge/Swift-5.9-F05138?style=flat-square&logo=swift">
   <img alt="SwiftUI" src="https://img.shields.io/badge/SwiftUI-💙-0D96F6?style=flat-square">
-  <img alt="Version" src="https://img.shields.io/badge/version-0.5.0-F59E0B?style=flat-square">
+  <img alt="Version" src="https://img.shields.io/badge/version-0.6.0-F59E0B?style=flat-square">
 </p>
 
 </div>
@@ -31,7 +31,7 @@
 ## 📖 目录
 
 - [✨ 为什么选择 FCPX 工具箱？](#-为什么选择-fcpx-工具箱)
-- [🚀 v0.5.0 重磅更新](#-v050-重磅更新)
+- [🚀 v0.6.0 重磅更新](#-v050-重磅更新)
 - [🎨 界面一览](#-界面一览)
 - [🧰 十大功能模块](#-十大功能模块)
 - [💾 下载与安装](#-下载与安装)
@@ -65,23 +65,26 @@
 
 ---
 
-## 🚀 v0.5.0 重磅更新
+## 🚀 v0.6.0 更新亮点
 
-v0.5.0 是一次从底层到界面的全面升级，我们用 **SwiftUI** 把整个应用重写了一遍，
-带来了更流畅的动画、更一致的交互，以及一套为暗房剪辑场景专门调校的 **Neo 视觉系统**。
+v0.6.0 在 v0.5.0 原生 SwiftUI 版本的基础上，带来了**更充实的文档、更一致的版本号管理，以及更可爱的使用体验**。
 
 | 🌟 亮点 | 说明 |
 | --- | --- |
-| **原生 SwiftUI 重写** | 彻底告别旧架构，统一使用 Swift Package Manager 管理依赖与构建。 |
-| **Neo 视觉系统** | 高对比度面板、像素级边框、自定义字体与硬朗阴影，专为暗光剪辑室设计。 |
-| **实时状态栏** | 底部状态栏实时显示 FCPX 运行状态与内存占用，点击呼出进程管理浮层。 |
-| **首次启动引导** | 新用户引导页帮助快速完成权限配置，降低上手门槛。 |
-| **模板库大升级** | 缩略图预览、五大分类筛选、分页浏览、一键删除，管理 Motion Templates 从未如此轻松。 |
-| **安全清理策略** | 风险分级 + 系统级移入废纸篓，清理缓存绝不碰原始媒体。 |
-| **本地语音识别** | 基于 macOS Speech 框架，音频/视频直接生成 SRT，无需上传云端。 |
+| **📖 全新图文 README** |  hero 区、徽章矩阵、功能卡片、更新日志、路线图一次补齐， README 也能很好看。 |
+| **🔖 版本号全项目同步** | README、官网、构建脚本、应用内回退版本号统一对齐到 v0.6.0，告别各处不一致。 |
+| **🎨 Neo 视觉系统** | 高对比度面板、像素级边框、自定义字体与硬朗阴影，专为暗光剪辑室设计。 |
+| **📊 实时状态栏** | 底部状态栏实时显示 FCPX 运行状态与内存占用，点击呼出进程管理浮层。 |
+| **🧹 安全清理策略** | 风险分级 + 系统级移入废纸篓，清理缓存绝不碰原始媒体。 |
+| **📝 本地语音识别** | 基于 macOS Speech 框架，音频/视频直接生成 SRT，无需上传云端。 |
 
 <details>
 <summary>📜 查看完整更新日志</summary>
+
+### v0.6.0
+- 全新图文版 README，包含英雄区、徽章、功能卡片、界面预览、路线图与致谢
+- 同步 README、docs、构建脚本与应用内回退版本号至 v0.6.0
+- 修复 AboutView 版本回退字符串不一致的问题
 
 ### v0.5.0
 - 使用 SwiftUI 完全重写原生 macOS 应用
@@ -150,14 +153,14 @@ v0.5.0 是一次从底层到界面的全面升级，我们用 **SwiftUI** 把整
 
 ### 方式一：下载预编译版本（推荐）
 
-1. 进入 👉 [GitHub Releases v0.5.0](https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.5.0)
-2. 下载 `FCPXTools-0.5.0.zip`
+1. 进入 👉 [GitHub Releases v0.6.0](https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.6.0)
+2. 下载 `FCPXTools-0.6.0.zip`
 3. 解压后将 `FCPX 工具箱.app` 拖入 **应用程序** 文件夹
 4. 首次启动如遇 Gatekeeper 提示，前往 **系统设置 > 隐私与安全性** 选择“仍要打开”
 
 ```bash
 # 喜欢命令行？一键打开下载页
-open "https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.5.0"
+open "https://github.com/Gary23333/FCPXTOOLS/releases/tag/v0.6.0"
 ```
 
 ### 方式二：从源码构建
@@ -207,7 +210,7 @@ scripts/build-native.sh
 构建产物位于：
 
 ```text
-dist/native-v0.5/FCPX 工具箱.app
+dist/native-v0.6/FCPX 工具箱.app
 ```
 
 ### 🎁 打包安装包
@@ -219,7 +222,7 @@ scripts/package-local.sh
 输出：
 
 ```text
-dist/FCPXTools-0.5.0.zip
+dist/FCPXTools-0.6.0.zip
 ```
 
 ---
