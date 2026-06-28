@@ -3,7 +3,7 @@ import SwiftUI
 /// 关于软件窗口。
 struct AboutView: View {
     private var appVersion: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.4.0"
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.5.0"
     }
 
     private var buildNumber: String {
